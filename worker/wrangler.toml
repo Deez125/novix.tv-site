@@ -1,0 +1,35 @@
+name = "panda-worker"
+main = "src/index.js"
+compatibility_date = "2024-12-01"
+compatibility_flags = ["nodejs_compat"]
+
+[vars]
+# Stripe - UPDATE THESE
+STRIPE_SECRET_KEY = "sk_test_placeholder"
+STRIPE_WEBHOOK_SECRET = "whsec_placeholder"
+STRIPE_DEFAULT_PRICE_ID = "price_placeholder_hd"
+STRIPE_PRICE_HD = "price_placeholder_hd"
+STRIPE_PRICE_4K = "price_placeholder_4k"
+
+# Supabase - UPDATE THESE
+SUPABASE_URL = "https://your-project.supabase.co"
+SUPABASE_ANON_KEY = "your-anon-key"
+SUPABASE_SERVICE_KEY = "your-service-key"
+
+# Plex - UPDATE THESE
+PLEX_TOKEN = "your-plex-token"
+PLEX_SERVER_URL = "https://your-plex-server.com:32400"
+PLEX_MACHINE_ID = "your-machine-id"
+
+# App
+ADMIN_API_KEY = "panda-admin-key-placeholder"
+FRONTEND_URL = "http://localhost:6969"
+
+# Tautulli (optional) - UPDATE OR REMOVE
+TAUTULLI_URL = "http://your-tautulli:8181"
+TAUTULLI_API_KEY = "your-tautulli-key"
+
+# Library IDs - UPDATE THESE based on your Plex server
+LIBRARY_IDS_HD = "[]"
+LIBRARY_IDS_4K = "[]"
+LIBRARY_IDS_ADMIN = "[]"
