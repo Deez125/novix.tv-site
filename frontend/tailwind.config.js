@@ -9,6 +9,12 @@ export default {
       colors: {
         slate: {
           950: '#0f172a',
+        },
+        // PandaTV brand purple
+        violet: {
+          400: '#a78bfa',
+          500: '#8b5cf6',
+          600: '#7c3aed',
         }
       }
     },

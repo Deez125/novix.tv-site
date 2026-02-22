@@ -1,42 +1,37 @@
 import { useState, useEffect, useRef } from 'react';
-import { useAuth, startPlexAuth as startPlexAuthApi, checkPlexAuth } from '../lib/auth';
+import { useAuth } from '../lib/auth';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8787';
 
 // Icons
-const FilmIcon = () => (
-  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M7 4v16M17 4v16M3 8h4m10 0h4M3 12h18M3 16h4m10 0h4M4 20h16a1 1 0 001-1V5a1 1 0 00-1-1H4a1 1 0 00-1 1v14a1 1 0 001 1z" />
-  </svg>
-);
-
 const TvIcon = () => (
   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
   </svg>
 );
 
-const NoAdsIcon = () => (
+const PhoneIcon = () => (
   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
   </svg>
 );
 
-const SparklesIcon = () => (
+const GlobeIcon = () => (
   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
+  </svg>
+);
+
+const PlayIcon = () => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
   </svg>
 );
 
 const CheckIcon = () => (
-  <svg className="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+  <svg className="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
-  </svg>
-);
-
-const SearchIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
   </svg>
 );
 
@@ -46,43 +41,43 @@ const ChevronDownIcon = () => (
   </svg>
 );
 
-const UsersIcon = () => (
+const LinkIcon = () => (
   <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
   </svg>
 );
 
-const BellIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9" />
+const ZapIcon = () => (
+  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
   </svg>
 );
 
 // FAQ Data
 const faqItems = [
   {
-    question: "What is Plex?",
-    answer: "Plex is a free streaming app that lets you watch content on any device - smart TVs, phones, tablets, computers, and gaming consoles. You'll use Plex to access PandaTV's library after subscribing."
-  },
-  {
-    question: "How do I watch?",
-    answer: "After subscribing, you'll receive an invite to our Plex server. Download the free Plex app on your device, sign in with your Plex account, and our library will appear automatically. It's that simple!"
-  },
-  {
-    question: "Can I cancel anytime?",
-    answer: "Absolutely! There are no contracts or commitments. You can cancel your subscription at any time from your account settings, and you won't be charged again."
+    question: "What is PandaTV?",
+    answer: "PandaTV is a premium streaming app that unifies your Plex libraries and IPTV providers into one beautiful interface. Access all your content from a single app on any device."
   },
   {
     question: "What devices are supported?",
-    answer: "Plex works on almost everything: Smart TVs (Samsung, LG, Sony, etc.), Roku, Apple TV, Fire TV, Chromecast, PlayStation, Xbox, iOS, Android, Mac, Windows, and web browsers."
+    answer: "PandaTV works on Smart TVs (Samsung, LG, Sony, etc.), iOS (iPhone & iPad), Android phones and tablets, Apple TV, Fire TV, Roku, and web browsers. Watch anywhere, anytime."
   },
   {
-    question: "What's the difference between HD and 4K plans?",
-    answer: "The HD plan streams content at up to 1080p resolution, perfect for most viewers. The 4K plan includes our premium 4K HDR library with the highest quality available - ideal for large TVs and home theaters."
+    question: "How do I connect my Plex library?",
+    answer: "After subscribing, go to Account Settings and link your Plex account with one click. Your entire library will appear instantly in the PandaTV app."
   },
   {
-    question: "How many people can watch at once?",
-    answer: "Individual plans include 1 simultaneous stream. Family plans (coming soon) will include 2+ simultaneous streams, perfect for households with multiple viewers."
+    question: "Can I use my own IPTV provider?",
+    answer: "Yes! PandaTV supports M3U playlists and Xtream Codes. Simply add your IPTV credentials in the app settings and your live TV channels will be integrated seamlessly."
+  },
+  {
+    question: "Can I cancel anytime?",
+    answer: "Absolutely! There are no contracts or commitments. Cancel your subscription at any time from your account settings, and you won't be charged again."
+  },
+  {
+    question: "Is there a free trial?",
+    answer: "We offer a 7-day free trial for new subscribers. Experience all PandaTV features before committing. Cancel anytime during the trial and you won't be charged."
   }
 ];
 
@@ -92,7 +87,7 @@ function FAQItem({ question, answer, isOpen, onClick }) {
     <div className="border-b border-slate-700/50 last:border-0">
       <button
         onClick={onClick}
-        className="w-full px-6 py-5 flex items-center justify-between text-left hover:text-emerald-400 transition"
+        className="w-full px-6 py-5 flex items-center justify-between text-left hover:text-violet-400 transition"
       >
         <span className="font-medium pr-4">{question}</span>
         <span className={`transform transition-transform duration-200 text-slate-400 ${isOpen ? 'rotate-180' : ''}`}>
@@ -106,61 +101,30 @@ function FAQItem({ question, answer, isOpen, onClick }) {
   );
 }
 
-// Subscription plans (family plans hidden for now - waitlist coming soon)
+// Subscription plans
 const plans = [
   {
-    id: 'access',
-    name: 'PandaTV Access',
-    price: 20,
-    quality: '1080p',
-    streams: 1,
+    id: 'monthly',
+    name: 'Monthly',
+    price: 9.99,
+    period: 'month',
     popular: false,
-    family: false,
   },
   {
-    id: 'plus',
-    name: 'PandaTV +',
-    price: 30,
-    quality: '4K',
-    streams: 1,
+    id: 'yearly',
+    name: 'Yearly',
+    price: 79.99,
+    period: 'year',
     popular: true,
-    family: false,
-  },
-  // Family plans - coming soon (shown in waitlist UI)
-  {
-    id: 'family',
-    name: 'PandaTV Family',
-    price: 30,
-    quality: '1080p',
-    streams: 2,
-    family: true,
-  },
-  {
-    id: 'family-plus',
-    name: 'PandaTV Family +',
-    price: 40,
-    quality: '4K',
-    streams: 2,
-    family: true,
+    savings: 'Save 33%',
   },
 ];
 
 
 export default function Home() {
-  const { user, login, logout } = useAuth();
-  const [selectedPlan, setSelectedPlan] = useState(null);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [authMode, setAuthMode] = useState('login'); // 'login' or 'subscribe'
-  const [step, setStep] = useState('start');
-  const [plexUser, setPlexUser] = useState(null);
-  const [pinData, setPinData] = useState(null);
-  const [error, setError] = useState('');
-  const [pollInterval, setPollIntervalState] = useState(null);
-  const [stats, setStats] = useState({ movies: 0, tvShows: 0 });
+  const { user, signOut, loading } = useAuth();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
-  const [waitlistEmail, setWaitlistEmail] = useState('');
-  const [waitlistSubmitted, setWaitlistSubmitted] = useState(false);
   const profileMenuRef = useRef(null);
 
   // Close profile menu when clicking outside
@@ -174,55 +138,14 @@ export default function Home() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Fetch library stats on load
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const response = await fetch(`${API_BASE}/api/stats`);
-        if (response.ok) {
-          const data = await response.json();
-          setStats(data);
-        }
-      } catch (err) {
-        console.error('Failed to fetch stats:', err);
-      }
-    };
-    fetchStats();
-  }, []);
-
-  // Check for cancelled checkout
-  useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    if (params.get('cancelled') === 'true') {
-      setError('Checkout was cancelled. You can try again.');
-      window.history.replaceState({}, '', '/');
-    }
-  }, []);
-
-  const handleSelectPlan = (plan) => {
-    // If already logged in, go straight to checkout confirmation
-    if (user) {
-      setSelectedPlan(plan);
-      setPlexUser(user);
-      setShowAuthModal(true);
-      setAuthMode('subscribe');
-      setStep('confirm');
-      setError('');
-    } else {
-      setSelectedPlan(plan);
-      setShowAuthModal(true);
-      setAuthMode('subscribe');
-      setStep('start');
-      setError('');
-    }
+  const handleLoginClick = () => {
+    window.history.pushState({}, '', '/login');
+    window.dispatchEvent(new PopStateEvent('popstate'));
   };
 
-  const handleLoginClick = () => {
-    setSelectedPlan(null);
-    setShowAuthModal(true);
-    setAuthMode('login');
-    setStep('start');
-    setError('');
+  const handleSignupClick = () => {
+    window.history.pushState({}, '', '/signup');
+    window.dispatchEvent(new PopStateEvent('popstate'));
   };
 
   const goToAccount = () => {
@@ -231,99 +154,22 @@ export default function Home() {
     window.dispatchEvent(new PopStateEvent('popstate'));
   };
 
-  const handleLogout = () => {
+  const handleLogout = async () => {
     setShowProfileMenu(false);
-    logout();
+    await signOut();
   };
 
-  const closeModal = () => {
-    if (pollInterval) {
-      clearInterval(pollInterval);
-      setPollIntervalState(null);
-    }
-    setShowAuthModal(false);
-    setSelectedPlan(null);
-    setAuthMode('login');
-    setStep('start');
-    setPlexUser(null);
-    setPinData(null);
-    setError('');
-  };
-
-  const doPlexAuth = async () => {
-    setError('');
-    try {
-      const data = await startPlexAuthApi();
-
-      setPinData(data);
-      setStep('authorizing');
-
-      window.open(data.auth_url, '_blank', 'width=600,height=700');
-
-      const interval = setInterval(async () => {
-        try {
-          const checkData = await checkPlexAuth(data.pin_id, data.pin_code);
-
-          if (checkData.authorized) {
-            clearInterval(interval);
-            setPollIntervalState(null);
-            setPlexUser(checkData.plex_user);
-
-            // If just logging in (not subscribing), save to context and close
-            if (authMode === 'login') {
-              login(checkData.plex_user);
-              closeModal();
-            } else {
-              setStep('confirm');
-            }
-          }
-        } catch (err) {
-          console.error('Poll error:', err);
-        }
-      }, 2000);
-
-      setPollIntervalState(interval);
-
-      setTimeout(() => {
-        clearInterval(interval);
-        setPollIntervalState(null);
-      }, 5 * 60 * 1000);
-
-    } catch (err) {
-      setError(err.message);
+  const handleSelectPlan = (plan) => {
+    if (user) {
+      // Go to checkout/subscription page
+      window.history.pushState({}, '', `/checkout?plan=${plan.id}`);
+      window.dispatchEvent(new PopStateEvent('popstate'));
+    } else {
+      // Go to signup with plan selected
+      window.history.pushState({}, '', `/signup?plan=${plan.id}`);
+      window.dispatchEvent(new PopStateEvent('popstate'));
     }
   };
-
-  const proceedToCheckout = async () => {
-    setError('');
-    setStep('processing');
-
-    try {
-      const response = await fetch(`${API_BASE}/api/signup`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          plex_user_id: plexUser.id,
-          plex_username: plexUser.username,
-          plex_email: plexUser.email,
-          tier: selectedPlan.quality === '4K' ? '4k' : 'hd',
-        }),
-      });
-
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to create checkout');
-      }
-
-      window.location.href = data.checkout_url;
-    } catch (err) {
-      setError(err.message);
-      setStep('confirm');
-    }
-  };
-
-  const individualPlans = plans.filter(p => !p.family);
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -331,7 +177,7 @@ export default function Home() {
       <nav className="border-b border-slate-800/50">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold">
-            <span className="text-emerald-400">Panda</span>TV
+            <span className="text-violet-400">Panda</span>TV
           </h1>
           {user ? (
             <div className="relative" ref={profileMenuRef}>
@@ -339,16 +185,16 @@ export default function Home() {
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                 className="flex items-center gap-2 hover:opacity-80 transition"
               >
-                {user.thumb ? (
+                {user.user_metadata?.avatar_url || user.user_metadata?.picture ? (
                   <img
-                    src={user.thumb}
-                    alt={user.username}
+                    src={user.user_metadata?.avatar_url || user.user_metadata?.picture}
+                    alt={user.user_metadata?.full_name || user.user_metadata?.name || user.email}
                     className="w-9 h-9 rounded-full border-2 border-slate-700"
                   />
                 ) : (
-                  <div className="w-9 h-9 bg-emerald-500/20 rounded-full flex items-center justify-center border-2 border-slate-700">
-                    <span className="text-emerald-400 font-semibold">
-                      {user.username.charAt(0).toUpperCase()}
+                  <div className="w-9 h-9 bg-violet-500/20 rounded-full flex items-center justify-center border-2 border-slate-700">
+                    <span className="text-violet-400 font-semibold">
+                      {(user.user_metadata?.full_name || user.user_metadata?.name || user.email || 'U').charAt(0).toUpperCase()}
                     </span>
                   </div>
                 )}
@@ -360,7 +206,7 @@ export default function Home() {
               {showProfileMenu && (
                 <div className="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50 py-1">
                   <div className="px-4 py-2 border-b border-slate-700">
-                    <div className="font-medium text-sm">{user.username}</div>
+                    <div className="font-medium text-sm">{user.user_metadata?.full_name || user.user_metadata?.name || 'User'}</div>
                     <div className="text-xs text-slate-400 truncate">{user.email}</div>
                   </div>
                   <button
@@ -372,6 +218,15 @@ export default function Home() {
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                     </svg>
                     Account Settings
+                  </button>
+                  <button
+                    onClick={() => {}}
+                    className="w-full text-left px-4 py-2 text-sm hover:bg-slate-700 transition flex items-center gap-2 text-slate-400"
+                  >
+                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                    Help
                   </button>
                   <button
                     onClick={handleLogout}
@@ -386,12 +241,20 @@ export default function Home() {
               )}
             </div>
           ) : (
-            <button
-              onClick={handleLoginClick}
-              className="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 rounded-lg font-medium transition"
-            >
-              Sign In
-            </button>
+            <div className="flex items-center gap-3">
+              <button
+                onClick={handleLoginClick}
+                className="px-4 py-2 text-slate-300 hover:text-white transition"
+              >
+                Sign In
+              </button>
+              <button
+                onClick={handleSignupClick}
+                className="px-4 py-2 bg-violet-600 hover:bg-violet-500 rounded-lg font-medium transition"
+              >
+                Get Started
+              </button>
+            </div>
           )}
         </div>
       </nav>
@@ -399,38 +262,60 @@ export default function Home() {
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-violet-500/10 border border-violet-500/30 rounded-full mb-6">
+            <span className="text-violet-400 text-sm font-medium">Now available on all platforms</span>
+          </div>
           <h2 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-            Your Personal
-            <span className="text-emerald-400"> Streaming</span> Paradise
+            All Your Streaming,
+            <span className="text-violet-400"> One App</span>
           </h2>
           <p className="text-xl text-slate-400 mb-8 max-w-2xl mx-auto">
-            Access thousands of movies and TV shows in stunning quality.
-            No ads, no interruptions, just pure entertainment.
+            Connect your Plex libraries and IPTV providers.
+            Watch everything in one beautiful, unified experience on any device.
           </p>
-          <button
-            onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
-            className="inline-block px-8 py-4 bg-emerald-600 hover:bg-emerald-500 rounded-lg font-semibold text-lg transition"
-          >
-            Start Watching Today
-          </button>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button
+              onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+              className="px-8 py-4 bg-violet-600 hover:bg-violet-500 rounded-lg font-semibold text-lg transition flex items-center gap-2"
+            >
+              <PlayIcon />
+              Start Free Trial
+            </button>
+            <button className="px-8 py-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg font-semibold text-lg transition">
+              Watch Demo
+            </button>
+          </div>
         </div>
       </section>
 
-      {/* Stats Section */}
-      <section className="py-16 px-4 border-y border-slate-800/50 bg-slate-900/30">
+      {/* Platform Icons */}
+      <section className="py-8 px-4 border-y border-slate-800/50 bg-slate-900/30">
         <div className="max-w-4xl mx-auto">
-          <div className="grid grid-cols-2 gap-8 text-center max-w-xl mx-auto">
-            <div>
-              <div className="text-4xl md:text-5xl font-bold text-emerald-400 mb-2">
-                {stats.movies > 0 ? stats.movies.toLocaleString() : '—'}
-              </div>
-              <div className="text-slate-400">Movies</div>
+          <p className="text-center text-slate-500 text-sm mb-6">Available on all your favorite platforms</p>
+          <div className="flex items-center justify-center gap-8 flex-wrap text-slate-400">
+            <div className="flex items-center gap-2">
+              <TvIcon />
+              <span className="text-sm">Smart TV</span>
             </div>
-            <div>
-              <div className="text-4xl md:text-5xl font-bold text-emerald-400 mb-2">
-                {stats.tvShows > 0 ? stats.tvShows.toLocaleString() : '—'}
-              </div>
-              <div className="text-slate-400">TV Shows</div>
+            <div className="flex items-center gap-2">
+              <PhoneIcon />
+              <span className="text-sm">iOS & Android</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <GlobeIcon />
+              <span className="text-sm">Web Browser</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
+              </svg>
+              <span className="text-sm">Apple TV</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M12.04 3.5c.59 0 1.2.04 1.82.13 3.49.49 6.37 2.87 7.43 6.14.35 1.08.53 2.18.53 3.31 0 .55-.04 1.09-.11 1.62-.44 3.25-2.41 5.97-5.24 7.38-.77.38-1.58.68-2.43.88-.59.14-1.2.21-1.82.21-.62 0-1.23-.07-1.82-.21-.85-.2-1.66-.5-2.43-.88-2.83-1.41-4.8-4.13-5.24-7.38-.07-.53-.11-1.07-.11-1.62 0-1.13.18-2.23.53-3.31 1.06-3.27 3.94-5.65 7.43-6.14.62-.09 1.23-.13 1.82-.13m0-1.5c-.7 0-1.42.05-2.13.16-4.06.58-7.43 3.35-8.69 7.22-.42 1.28-.64 2.61-.64 3.95 0 .66.04 1.31.13 1.94.52 3.86 2.86 7.11 6.15 8.75.9.45 1.85.8 2.84 1.03.7.17 1.42.25 2.13.25.71 0 1.43-.08 2.13-.25.99-.23 1.94-.58 2.84-1.03 3.29-1.64 5.63-4.89 6.15-8.75.09-.63.13-1.28.13-1.94 0-1.34-.22-2.67-.64-3.95-1.26-3.87-4.63-6.64-8.69-7.22-.71-.11-1.43-.16-2.13-.16z"/>
+              </svg>
+              <span className="text-sm">Fire TV</span>
             </div>
           </div>
         </div>
@@ -439,42 +324,45 @@ export default function Home() {
       {/* Features Section */}
       <section className="py-20 px-4">
         <div className="max-w-5xl mx-auto">
-          <h3 className="text-3xl font-bold text-center mb-12">Why Choose PandaTV?</h3>
+          <h3 className="text-3xl font-bold text-center mb-4">Everything You Need</h3>
+          <p className="text-slate-400 text-center mb-12 max-w-2xl mx-auto">
+            PandaTV brings all your streaming content together in one powerful app.
+          </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-6">
-              <div className="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center mb-4 text-emerald-400">
-                <NoAdsIcon />
+              <div className="w-12 h-12 bg-violet-500/20 rounded-lg flex items-center justify-center mb-4 text-violet-400">
+                <LinkIcon />
               </div>
-              <h4 className="text-lg font-semibold mb-2">Zero Ads</h4>
+              <h4 className="text-lg font-semibold mb-2">Connect Plex</h4>
               <p className="text-slate-400 text-sm">
-                Absolutely no advertisements. Ever. Just press play and enjoy.
+                Link your Plex libraries and access all your media in one place.
               </p>
             </div>
             <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-6">
-              <div className="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center mb-4 text-emerald-400">
-                <SparklesIcon />
-              </div>
-              <h4 className="text-lg font-semibold mb-2">4K Quality</h4>
-              <p className="text-slate-400 text-sm">
-                Crystal clear 4K HDR content for the ultimate viewing experience.
-              </p>
-            </div>
-            <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-6">
-              <div className="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center mb-4 text-emerald-400">
-                <FilmIcon />
-              </div>
-              <h4 className="text-lg font-semibold mb-2">Huge Library</h4>
-              <p className="text-slate-400 text-sm">
-                Thousands of movies and shows, with new content added daily.
-              </p>
-            </div>
-            <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-6">
-              <div className="w-12 h-12 bg-emerald-500/20 rounded-lg flex items-center justify-center mb-4 text-emerald-400">
+              <div className="w-12 h-12 bg-violet-500/20 rounded-lg flex items-center justify-center mb-4 text-violet-400">
                 <TvIcon />
+              </div>
+              <h4 className="text-lg font-semibold mb-2">Live TV</h4>
+              <p className="text-slate-400 text-sm">
+                Add your IPTV provider and watch live channels seamlessly.
+              </p>
+            </div>
+            <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-6">
+              <div className="w-12 h-12 bg-violet-500/20 rounded-lg flex items-center justify-center mb-4 text-violet-400">
+                <ZapIcon />
+              </div>
+              <h4 className="text-lg font-semibold mb-2">Fast & Smooth</h4>
+              <p className="text-slate-400 text-sm">
+                Optimized for performance with instant playback and smooth navigation.
+              </p>
+            </div>
+            <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-6">
+              <div className="w-12 h-12 bg-violet-500/20 rounded-lg flex items-center justify-center mb-4 text-violet-400">
+                <PhoneIcon />
               </div>
               <h4 className="text-lg font-semibold mb-2">Any Device</h4>
               <p className="text-slate-400 text-sm">
-                Stream on your TV, phone, tablet, or computer. Plex works everywhere.
+                Watch on TV, phone, tablet, or browser. Your content follows you.
               </p>
             </div>
           </div>
@@ -486,37 +374,34 @@ export default function Home() {
         <div className="max-w-5xl mx-auto">
           <h3 className="text-3xl font-bold text-center mb-4">How It Works</h3>
           <p className="text-slate-400 text-center mb-12 max-w-2xl mx-auto">
-            Get started in minutes. No complicated setup, no technical knowledge required.
+            Get started in minutes. Connect your services and start streaming.
           </p>
           <div className="grid md:grid-cols-3 gap-8">
-            {/* Step 1 */}
             <div className="text-center">
-              <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4 relative">
-                <span className="text-2xl font-bold text-emerald-400">1</span>
+              <div className="w-16 h-16 bg-violet-500/20 rounded-full flex items-center justify-center mx-auto mb-4 relative">
+                <span className="text-2xl font-bold text-violet-400">1</span>
               </div>
-              <h4 className="text-lg font-semibold mb-2">Choose Your Plan</h4>
+              <h4 className="text-lg font-semibold mb-2">Create Account</h4>
               <p className="text-slate-400 text-sm">
-                Pick the plan that fits your needs. HD for everyday watching, or 4K for the ultimate experience.
+                Sign up with email or your favorite social account. Start your free trial instantly.
               </p>
             </div>
-            {/* Step 2 */}
             <div className="text-center">
-              <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-emerald-400">2</span>
+              <div className="w-16 h-16 bg-violet-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-bold text-violet-400">2</span>
               </div>
-              <h4 className="text-lg font-semibold mb-2">Connect with Plex</h4>
+              <h4 className="text-lg font-semibold mb-2">Connect Services</h4>
               <p className="text-slate-400 text-sm">
-                Sign in with your free Plex account. Don't have one? Create it in seconds during checkout.
+                Link your Plex account and add your IPTV provider credentials.
               </p>
             </div>
-            {/* Step 3 */}
             <div className="text-center">
-              <div className="w-16 h-16 bg-emerald-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-emerald-400">3</span>
+              <div className="w-16 h-16 bg-violet-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                <span className="text-2xl font-bold text-violet-400">3</span>
               </div>
-              <h4 className="text-lg font-semibold mb-2">Start Streaming</h4>
+              <h4 className="text-lg font-semibold mb-2">Start Watching</h4>
               <p className="text-slate-400 text-sm">
-                You'll receive an instant invite. Open Plex on any device and our library appears automatically.
+                Download the app on your devices and enjoy all your content in one place.
               </p>
             </div>
           </div>
@@ -525,27 +410,26 @@ export default function Home() {
 
       {/* Pricing Section */}
       <section id="pricing" className="py-20 px-4">
-        <div className="max-w-5xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold mb-4">Simple, Transparent Pricing</h3>
-            <p className="text-slate-400">Choose the plan that's right for you. Cancel anytime.</p>
+            <h3 className="text-3xl font-bold mb-4">Simple Pricing</h3>
+            <p className="text-slate-400">Start with a 7-day free trial. Cancel anytime.</p>
           </div>
 
-          {/* Individual Plans */}
-          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto mb-12">
-            {individualPlans.map((plan) => (
+          <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+            {plans.map((plan) => (
               <div
                 key={plan.id}
                 className={`relative bg-slate-800/50 border rounded-2xl p-6 ${
                   plan.popular
-                    ? 'border-emerald-500 ring-2 ring-emerald-500/20'
+                    ? 'border-violet-500 ring-2 ring-violet-500/20'
                     : 'border-slate-700'
                 }`}
               >
                 {plan.popular && (
                   <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-emerald-500 text-black text-xs font-bold px-3 py-1 rounded-full">
-                      MOST POPULAR
+                    <span className="bg-violet-500 text-white text-xs font-bold px-3 py-1 rounded-full">
+                      BEST VALUE
                     </span>
                   </div>
                 )}
@@ -553,120 +437,52 @@ export default function Home() {
                   <h4 className="text-xl font-bold mb-2">{plan.name}</h4>
                   <div className="flex items-baseline gap-1">
                     <span className="text-4xl font-bold">${plan.price}</span>
-                    <span className="text-slate-400">/month</span>
+                    <span className="text-slate-400">/{plan.period}</span>
                   </div>
+                  {plan.savings && (
+                    <span className="text-violet-400 text-sm font-medium">{plan.savings}</span>
+                  )}
                 </div>
                 <ul className="space-y-3 mb-6">
                   <li className="flex items-center gap-3">
                     <CheckIcon />
-                    <span>{plan.quality} streaming quality</span>
+                    <span>All platform access</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <CheckIcon />
-                    <span>{plan.streams} simultaneous stream{plan.streams > 1 ? 's' : ''}</span>
+                    <span>Unlimited Plex libraries</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <CheckIcon />
-                    <span>Full library access</span>
+                    <span>IPTV integration</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <CheckIcon />
-                    <span>No ads, ever</span>
+                    <span>4K streaming support</span>
+                  </li>
+                  <li className="flex items-center gap-3">
+                    <CheckIcon />
+                    <span>7-day free trial</span>
                   </li>
                 </ul>
                 <button
                   onClick={() => handleSelectPlan(plan)}
                   className={`w-full py-3 rounded-lg font-semibold transition ${
                     plan.popular
-                      ? 'bg-emerald-600 hover:bg-emerald-500'
+                      ? 'bg-violet-600 hover:bg-violet-500'
                       : 'bg-slate-700 hover:bg-slate-600'
                   }`}
                 >
-                  Get Started
+                  Start Free Trial
                 </button>
               </div>
             ))}
-          </div>
-
-          {/* Family Plans Waitlist */}
-          <div className="max-w-2xl mx-auto">
-            <div className="bg-gradient-to-br from-amber-500/10 to-emerald-500/10 border border-amber-500/30 rounded-2xl p-8 text-center">
-              <div className="w-14 h-14 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-4 text-amber-400">
-                <UsersIcon />
-              </div>
-              <h4 className="text-2xl font-bold mb-2">Family Plans Coming Soon</h4>
-              <p className="text-slate-400 mb-6">
-                Share PandaTV with your household. Get 2 simultaneous streams and save.
-                Join the waitlist to be notified when family plans launch.
-              </p>
-
-              {waitlistSubmitted ? (
-                <div className="flex items-center justify-center gap-2 text-emerald-400">
-                  <CheckIcon />
-                  <span className="font-medium">You're on the list! We'll notify you soon.</span>
-                </div>
-              ) : (
-                <div className="flex gap-3 max-w-md mx-auto">
-                  <input
-                    type="email"
-                    placeholder="Enter your email"
-                    value={waitlistEmail}
-                    onChange={(e) => setWaitlistEmail(e.target.value)}
-                    className="flex-1 px-4 py-3 bg-slate-800/80 border border-slate-600 rounded-lg focus:outline-none focus:border-amber-500 transition"
-                  />
-                  <button
-                    onClick={() => {
-                      if (waitlistEmail) setWaitlistSubmitted(true);
-                    }}
-                    className="px-6 py-3 bg-amber-500 hover:bg-amber-400 text-black font-semibold rounded-lg transition flex items-center gap-2"
-                  >
-                    <BellIcon />
-                    Notify Me
-                  </button>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Search Preview Section */}
-      <section className="py-20 px-4 bg-slate-900/30">
-        <div className="max-w-4xl mx-auto">
-          <h3 className="text-3xl font-bold text-center mb-4">Find Anything Instantly</h3>
-          <p className="text-slate-400 text-center mb-8 max-w-2xl mx-auto">
-            Search our massive library for your favorite movies and shows. New content added daily.
-          </p>
-          <div className="relative max-w-2xl mx-auto">
-            <div className="flex items-center gap-3 px-5 py-4 bg-slate-800/80 border border-slate-700 rounded-xl">
-              <SearchIcon />
-              <input
-                type="text"
-                placeholder="Try searching: Dune, Breaking Bad, The Office..."
-                className="flex-1 bg-transparent outline-none text-white placeholder-slate-500"
-                disabled
-              />
-            </div>
-            {/* Fake search results preview */}
-            <div className="mt-4 bg-slate-800/60 border border-slate-700/50 rounded-xl p-4">
-              <div className="text-xs text-slate-500 uppercase tracking-wider mb-3">Popular Searches</div>
-              <div className="flex flex-wrap gap-2">
-                {['Dune', 'Breaking Bad', 'The Office', 'Interstellar', 'Stranger Things', 'The Mandalorian'].map((title) => (
-                  <span
-                    key={title}
-                    className="px-3 py-1.5 bg-slate-700/50 hover:bg-slate-700 rounded-lg text-sm cursor-pointer transition"
-                  >
-                    {title}
-                  </span>
-                ))}
-              </div>
-            </div>
           </div>
         </div>
       </section>
 
       {/* FAQ Section */}
-      <section className="py-20 px-4">
+      <section className="py-20 px-4 bg-slate-900/30">
         <div className="max-w-3xl mx-auto">
           <h3 className="text-3xl font-bold text-center mb-4">Frequently Asked Questions</h3>
           <p className="text-slate-400 text-center mb-10">
@@ -686,12 +502,28 @@ export default function Home() {
         </div>
       </section>
 
+      {/* CTA Section */}
+      <section className="py-20 px-4">
+        <div className="max-w-4xl mx-auto text-center">
+          <h3 className="text-3xl font-bold mb-4">Ready to Get Started?</h3>
+          <p className="text-slate-400 mb-8 max-w-xl mx-auto">
+            Join thousands of users who have unified their streaming experience with PandaTV.
+          </p>
+          <button
+            onClick={handleSignupClick}
+            className="px-8 py-4 bg-violet-600 hover:bg-violet-500 rounded-lg font-semibold text-lg transition"
+          >
+            Start Your Free Trial
+          </button>
+        </div>
+      </section>
+
       {/* Footer */}
       <footer className="py-10 px-4 border-t border-slate-800/50 bg-slate-900/50">
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="text-2xl font-bold">
-              <span className="text-emerald-400">Panda</span>TV
+              <span className="text-violet-400">Panda</span>TV
             </div>
             <div className="text-slate-500 text-sm">
               &copy; {new Date().getFullYear()} PandaTV. All rights reserved.
@@ -699,131 +531,6 @@ export default function Home() {
           </div>
         </div>
       </footer>
-
-      {/* Auth Modal */}
-      {showAuthModal && (
-        <div className="fixed inset-0 bg-black/70 flex items-center justify-center z-50 p-4">
-          <div className="bg-slate-800 rounded-2xl border border-slate-700 w-full max-w-md p-6 relative">
-            <button
-              onClick={closeModal}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white"
-            >
-              <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-              </svg>
-            </button>
-
-            {error && (
-              <div className="bg-red-500/20 text-red-400 border border-red-500/30 rounded p-3 mb-4">
-                {error}
-              </div>
-            )}
-
-            {/* Step 1: Start */}
-            {step === 'start' && (
-              <div className="text-center">
-                <div className="mb-6">
-                  <div className="w-16 h-16 bg-amber-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                    <svg className="w-8 h-8 text-amber-400" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/>
-                    </svg>
-                  </div>
-                  <h2 className="text-xl font-semibold mb-2">Sign in with Plex</h2>
-                  <p className="text-slate-400 text-sm">
-                    {authMode === 'subscribe' && selectedPlan
-                      ? <>Connect your Plex account to subscribe to <strong>{selectedPlan.name}</strong></>
-                      : 'Connect your Plex account to sign in'
-                    }
-                  </p>
-                </div>
-
-                <button
-                  onClick={doPlexAuth}
-                  className="w-full px-4 py-3 bg-amber-500 hover:bg-amber-400 text-black font-semibold rounded-lg transition"
-                >
-                  Sign in with Plex
-                </button>
-              </div>
-            )}
-
-            {/* Step 2: Authorizing */}
-            {step === 'authorizing' && (
-              <div className="text-center">
-                <div className="mb-6">
-                  <div className="w-16 h-16 border-4 border-slate-600 border-t-emerald-400 rounded-full animate-spin mx-auto mb-4"></div>
-                  <h2 className="text-xl font-semibold mb-2">Waiting for Authorization</h2>
-                  <p className="text-slate-400 text-sm">
-                    Complete the sign-in in the Plex popup window.
-                  </p>
-                </div>
-              </div>
-            )}
-
-            {/* Step 3: Confirm */}
-            {step === 'confirm' && plexUser && (
-              <div>
-                <div className="flex items-center gap-4 mb-6 p-4 bg-slate-900 rounded-lg">
-                  {plexUser.thumb ? (
-                    <img
-                      src={plexUser.thumb}
-                      alt={plexUser.username}
-                      className="w-12 h-12 rounded-full"
-                    />
-                  ) : (
-                    <div className="w-12 h-12 bg-emerald-500/20 rounded-full flex items-center justify-center">
-                      <span className="text-emerald-400 font-semibold text-lg">
-                        {plexUser.username.charAt(0).toUpperCase()}
-                      </span>
-                    </div>
-                  )}
-                  <div>
-                    <div className="font-medium">{plexUser.username}</div>
-                    <div className="text-sm text-slate-400">{plexUser.email}</div>
-                  </div>
-                  <div className="ml-auto">
-                    <span className="px-2 py-1 text-xs bg-emerald-500/20 text-emerald-400 rounded">
-                      Connected
-                    </span>
-                  </div>
-                </div>
-
-                <div className="mb-6 p-4 bg-slate-900 rounded-lg border border-slate-700">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="font-semibold">{selectedPlan?.name}</span>
-                    <span className="text-xl font-bold">${selectedPlan?.price}/mo</span>
-                  </div>
-                  <div className="text-sm text-slate-400">
-                    {selectedPlan?.quality} • {selectedPlan?.streams} stream{selectedPlan?.streams > 1 ? 's' : ''}
-                  </div>
-                </div>
-
-                <button
-                  onClick={proceedToCheckout}
-                  className="w-full px-4 py-3 bg-emerald-600 hover:bg-emerald-500 font-semibold rounded-lg transition"
-                >
-                  Continue to Checkout
-                </button>
-
-                <button
-                  onClick={() => { setStep('start'); setPlexUser(null); }}
-                  className="w-full mt-3 px-4 py-2 text-slate-400 hover:text-white transition text-sm"
-                >
-                  Use a different account
-                </button>
-              </div>
-            )}
-
-            {/* Step 4: Processing */}
-            {step === 'processing' && (
-              <div className="text-center">
-                <div className="w-16 h-16 border-4 border-slate-600 border-t-emerald-400 rounded-full animate-spin mx-auto mb-4"></div>
-                <h2 className="text-xl font-semibold mb-2">Setting up your subscription...</h2>
-                <p className="text-slate-400 text-sm">Redirecting to checkout...</p>
-              </div>
-            )}
-          </div>
-        </div>
-      )}
     </div>
   );
 }

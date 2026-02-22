@@ -1,36 +1,25 @@
 import { useState } from 'react';
 import { useAuth } from '../lib/auth';
 
-export default function Signup() {
-  const { signUp, signInWithOAuth } = useAuth();
+export default function Login() {
+  const { signIn, signInWithOAuth } = useAuth();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [confirmPassword, setConfirmPassword] = useState('');
   const [error, setError] = useState('');
-  const [success, setSuccess] = useState(false);
   const [loading, setLoading] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError('');
-
-    if (password !== confirmPassword) {
-      setError('Passwords do not match');
-      return;
-    }
-
-    if (password.length < 6) {
-      setError('Password must be at least 6 characters');
-      return;
-    }
-
     setLoading(true);
 
     try {
-      await signUp(email, password);
-      setSuccess(true);
+      await signIn(email, password);
+      // Redirect to home on success
+      window.history.pushState({}, '', '/');
+      window.dispatchEvent(new PopStateEvent('popstate'));
     } catch (err) {
-      setError(err.message || 'Failed to create account');
+      setError(err.message || 'Failed to sign in');
     } finally {
       setLoading(false);
     }
@@ -41,7 +30,7 @@ export default function Signup() {
     try {
       await signInWithOAuth(provider);
     } catch (err) {
-      setError(err.message || `Failed to sign up with ${provider}`);
+      setError(err.message || `Failed to sign in with ${provider}`);
     }
   };
 
@@ -50,37 +39,10 @@ export default function Signup() {
     window.dispatchEvent(new PopStateEvent('popstate'));
   };
 
-  const goToLogin = () => {
-    window.history.pushState({}, '', '/login');
+  const goToSignup = () => {
+    window.history.pushState({}, '', '/signup');
     window.dispatchEvent(new PopStateEvent('popstate'));
   };
-
-  if (success) {
-    return (
-      <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-4">
-        <div className="w-full max-w-md text-center">
-          <div className="bg-slate-800/50 rounded-lg border border-slate-700 p-8">
-            <div className="w-16 h-16 bg-violet-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg className="w-8 h-8 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-              </svg>
-            </div>
-            <h2 className="text-2xl font-bold mb-2">Check your email</h2>
-            <p className="text-slate-400 mb-6">
-              We've sent a confirmation link to <span className="text-white font-medium">{email}</span>.
-              Click the link to verify your account.
-            </p>
-            <button
-              onClick={goToLogin}
-              className="px-6 py-2 bg-violet-600 hover:bg-violet-500 rounded-lg transition"
-            >
-              Back to Sign In
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center p-4">
@@ -90,7 +52,7 @@ export default function Signup() {
           <button onClick={goHome} className="text-3xl font-bold mb-2">
             <span className="text-violet-400">Panda</span>TV
           </button>
-          <p className="text-slate-400">Create your account</p>
+          <p className="text-slate-400">Sign in to your account</p>
         </div>
 
         {/* Card */}
@@ -143,7 +105,7 @@ export default function Signup() {
               <div className="w-full border-t border-slate-600"></div>
             </div>
             <div className="relative flex justify-center text-sm">
-              <span className="px-2 bg-slate-800/50 text-slate-400">or sign up with email</span>
+              <span className="px-2 bg-slate-800/50 text-slate-400">or continue with email</span>
             </div>
           </div>
 
@@ -173,22 +135,17 @@ export default function Signup() {
                 onChange={(e) => setPassword(e.target.value)}
                 required
                 className="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:outline-none focus:border-violet-500 transition"
-                placeholder="Create a password"
+                placeholder="Enter your password"
               />
             </div>
 
-            <div>
-              <label className="block text-sm font-medium text-slate-300 mb-2">
-                Confirm Password
-              </label>
-              <input
-                type="password"
-                value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
-                required
-                className="w-full px-4 py-3 bg-slate-900 border border-slate-600 rounded-lg focus:outline-none focus:border-violet-500 transition"
-                placeholder="Confirm your password"
-              />
+            <div className="flex items-center justify-end">
+              <button
+                type="button"
+                className="text-sm text-violet-400 hover:text-violet-300 transition"
+              >
+                Forgot password?
+              </button>
             </div>
 
             <button
@@ -196,23 +153,19 @@ export default function Signup() {
               disabled={loading}
               className="w-full px-4 py-3 bg-violet-600 hover:bg-violet-500 font-semibold rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {loading ? 'Creating account...' : 'Create Account'}
+              {loading ? 'Signing in...' : 'Sign In'}
             </button>
           </form>
-
-          <p className="text-xs text-slate-500 text-center mt-4">
-            By signing up, you agree to our Terms of Service and Privacy Policy
-          </p>
         </div>
 
         {/* Footer */}
         <div className="text-center mt-6 text-slate-400">
-          Already have an account?{' '}
+          Don't have an account?{' '}
           <button
-            onClick={goToLogin}
+            onClick={goToSignup}
             className="text-violet-400 hover:text-violet-300 font-medium transition"
           >
-            Sign in
+            Sign up
           </button>
         </div>
       </div>

@@ -1,10 +1,13 @@
 import { useState, useEffect } from 'react';
-import { AuthProvider } from './lib/auth';
+import { AuthProvider, useAuth } from './lib/auth';
 import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
 import Home from './pages/Home';
+import Login from './pages/Login';
+import Signup from './pages/Signup';
 import Success from './pages/Success';
 import Account from './pages/Account';
+import CompleteProfileModal from './components/CompleteProfileModal';
 
 // Simple hash-based router
 function useRoute() {
@@ -30,7 +33,7 @@ function AdminLayout() {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold">
-              <span className="text-emerald-400">PandaTV</span> Manager
+              <span className="text-violet-400">PandaTV</span> Manager
             </h1>
             <nav className="flex gap-1">
               <button
@@ -69,26 +72,45 @@ function AdminLayout() {
 
 function Router() {
   const route = useRoute();
+  const { user, needsProfileCompletion, profileLoading, updateUserProfile } = useAuth();
+
+  // Handle profile completion
+  const handleProfileComplete = (updates) => {
+    updateUserProfile(updates);
+  };
 
   // Route matching
-  if (route === '/' || route === '/signup') {
-    return <Home />;
+  let content;
+  if (route === '/') {
+    content = <Home />;
+  } else if (route === '/login') {
+    content = <Login />;
+  } else if (route === '/signup') {
+    content = <Signup />;
+  } else if (route === '/success') {
+    content = <Success />;
+  } else if (route === '/account') {
+    content = <Account />;
+  } else if (route === '/admin') {
+    content = <AdminLayout />;
+  } else {
+    // 404 fallback - redirect to home
+    content = <Home />;
   }
 
-  if (route === '/success') {
-    return <Success />;
-  }
-
-  if (route === '/account') {
-    return <Account />;
-  }
-
-  if (route === '/admin') {
-    return <AdminLayout />;
-  }
-
-  // 404 fallback - redirect to home
-  return <Home />;
+  return (
+    <>
+      {content}
+      {/* Show profile completion modal when user is logged in but missing name */}
+      {user && !profileLoading && needsProfileCompletion && (
+        <CompleteProfileModal
+          isOpen={true}
+          user={user}
+          onComplete={handleProfileComplete}
+        />
+      )}
+    </>
+  );
 }
 
 export default function App() {
