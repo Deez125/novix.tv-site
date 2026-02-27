@@ -11,10 +11,8 @@ STRIPE_DEFAULT_PRICE_ID = "price_placeholder_hd"
 STRIPE_PRICE_HD = "price_placeholder_hd"
 STRIPE_PRICE_4K = "price_placeholder_4k"
 
-# Supabase - UPDATE THESE
-SUPABASE_URL = "https://your-project.supabase.co"
-SUPABASE_ANON_KEY = "your-anon-key"
-SUPABASE_SERVICE_KEY = "your-service-key"
+# Supabase - Set via `wrangler secret put`
+# SUPABASE_URL, SUPABASE_ANON_KEY, SUPABASE_SERVICE_KEY
 
 # Plex - UPDATE THESE
 PLEX_TOKEN = "your-plex-token"

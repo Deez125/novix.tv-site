@@ -10,7 +10,7 @@ export default {
         slate: {
           950: '#0f172a',
         },
-        // PandaTV brand purple
+        // NovixTV brand purple
         violet: {
           400: '#a78bfa',
           500: '#8b5cf6',

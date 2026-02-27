@@ -66,7 +66,7 @@ async function plexApi(env, endpoint, options = {}) {
 
   const headers = {
     'X-Plex-Token': env.PLEX_TOKEN,
-    'X-Plex-Client-Identifier': 'panda-tv',
+    'X-Plex-Client-Identifier': 'novix-tv',
     'Accept': 'application/json',
     'Content-Type': 'application/json',
   };
@@ -144,7 +144,7 @@ async function removePlexFriend(env, plexUserId) {
     const response = await fetch(`https://plex.tv/api/servers/${env.PLEX_MACHINE_ID}/shared_servers`, {
       headers: {
         'X-Plex-Token': env.PLEX_TOKEN,
-        'X-Plex-Client-Identifier': 'panda-tv',
+        'X-Plex-Client-Identifier': 'novix-tv',
       },
     });
 
@@ -167,7 +167,7 @@ async function removePlexFriend(env, plexUserId) {
           method: 'DELETE',
           headers: {
             'X-Plex-Token': env.PLEX_TOKEN,
-            'X-Plex-Client-Identifier': 'panda-tv',
+            'X-Plex-Client-Identifier': 'novix-tv',
           },
         });
         if (deleteResponse.ok || deleteResponse.status === 200) {
@@ -218,7 +218,7 @@ async function getPlexSectionIds(env, libraryKeys) {
     const response = await fetch(`https://plex.tv/api/servers/${env.PLEX_MACHINE_ID}`, {
       headers: {
         'X-Plex-Token': env.PLEX_TOKEN,
-        'X-Plex-Client-Identifier': 'panda-tv',
+        'X-Plex-Client-Identifier': 'novix-tv',
         'Accept': 'application/json',
       },
     });
@@ -262,7 +262,7 @@ async function updatePlexLibraryAccess(env, plexUserId, libraryKeys) {
     const response = await fetch(`https://plex.tv/api/servers/${env.PLEX_MACHINE_ID}/shared_servers`, {
       headers: {
         'X-Plex-Token': env.PLEX_TOKEN,
-        'X-Plex-Client-Identifier': 'panda-tv',
+        'X-Plex-Client-Identifier': 'novix-tv',
       },
     });
 
@@ -298,7 +298,7 @@ async function updatePlexLibraryAccess(env, plexUserId, libraryKeys) {
       method: 'PUT',
       headers: {
         'X-Plex-Token': env.PLEX_TOKEN,
-        'X-Plex-Client-Identifier': 'panda-tv',
+        'X-Plex-Client-Identifier': 'novix-tv',
         'Accept': 'application/json',
         'Content-Type': 'application/json',
       },
@@ -333,7 +333,7 @@ async function invitePlexFriend(env, email, libraryKeys = [], plexUserId = null)
       const response = await fetch(`https://plex.tv/api/v2/shared_servers?machineIdentifier=${env.PLEX_MACHINE_ID}`, {
         headers: {
           'X-Plex-Token': env.PLEX_TOKEN,
-          'X-Plex-Client-Identifier': 'panda-tv',
+          'X-Plex-Client-Identifier': 'novix-tv',
           'Accept': 'application/json',
         },
       });
@@ -390,7 +390,7 @@ async function invitePlexFriend(env, email, libraryKeys = [], plexUserId = null)
     method: 'POST',
     headers: {
       'X-Plex-Token': env.PLEX_TOKEN,
-      'X-Plex-Client-Identifier': 'panda-tv',
+      'X-Plex-Client-Identifier': 'novix-tv',
       'Accept': 'application/json',
       'Content-Type': 'application/json',
     },
@@ -412,8 +412,8 @@ async function getPlexPin() {
     headers: {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
-      'X-Plex-Client-Identifier': 'panda-tv',
-      'X-Plex-Product': 'PandaTV',
+      'X-Plex-Client-Identifier': 'novix-tv',
+      'X-Plex-Product': 'NovixTV',
       'X-Plex-Version': '1.0.0',
       'X-Plex-Platform': 'Web',
     },
@@ -433,7 +433,7 @@ async function checkPlexPin(pinId, pinCode) {
     method: 'GET',
     headers: {
       'Accept': 'application/json',
-      'X-Plex-Client-Identifier': 'panda-tv',
+      'X-Plex-Client-Identifier': 'novix-tv',
       'code': pinCode,
     },
   });
@@ -452,7 +452,7 @@ async function getPlexUser(authToken) {
     headers: {
       'Accept': 'application/json',
       'X-Plex-Token': authToken,
-      'X-Plex-Client-Identifier': 'panda-tv',
+      'X-Plex-Client-Identifier': 'novix-tv',
     },
   });
 
@@ -948,7 +948,7 @@ async function handleGetStats(env) {
 // Start Plex auth - returns PIN and auth URL
 async function handlePlexAuthStart() {
   const pin = await getPlexPin();
-  const authUrl = `https://app.plex.tv/auth#?clientID=panda-tv&code=${pin.code}&context%5Bdevice%5D%5Bproduct%5D=PandaTV`;
+  const authUrl = `https://app.plex.tv/auth#?clientID=novix-tv&code=${pin.code}&context%5Bdevice%5D%5Bproduct%5D=NovixTV`;
 
   return jsonResponse({
     pin_id: pin.id,
@@ -984,6 +984,7 @@ async function handlePlexAuthCheck(request) {
       username: user.username,
       email: user.email,
       thumb: user.thumb,
+      authToken: pin.authToken, // CRITICAL: Include the token so frontend can save it
     },
   });
 }
@@ -1300,6 +1301,277 @@ async function handleCheckoutSuccess(request, env) {
   return jsonResponse({ success: true, user_id: userId });
 }
 
+// ===== DEVICE AUTHENTICATION FUNCTIONS =====
+
+// Generate unique 4-digit device code
+async function generateUniqueCode(env) {
+  const maxAttempts = 10;
+
+  for (let attempt = 0; attempt < maxAttempts; attempt++) {
+    // Generate random 4-digit code
+    const code = Math.floor(1000 + Math.random() * 9000).toString();
+
+    // Check if code already exists and is still active
+    try {
+      const existing = await supabase(env, 'device_auth_codes', {
+        method: 'GET',
+        query: `code=eq.${code}&activated=eq.false&expires_at=gt.${new Date().toISOString()}`,
+        single: true
+      });
+
+      // If no active code exists with this number, we're good!
+      if (!existing) {
+        return code;
+      }
+
+      // Collision detected, try again
+      console.log(`Code ${code} collision detected (attempt ${attempt + 1}), retrying...`);
+    } catch (err) {
+      // PGRST116 means no rows returned, which is what we want
+      if (err.message.includes('PGRST116') || err.message.includes('no rows')) {
+        return code;
+      }
+      throw err;
+    }
+  }
+
+  // If we failed after 10 attempts, throw error
+  throw new Error('Failed to generate unique code after 10 attempts');
+}
+
+// POST /api/device/code - Generate device activation code
+async function handleGenerateDeviceCode(env) {
+  try {
+    const code = await generateUniqueCode(env);
+    const expiresAt = new Date(Date.now() + 15 * 60 * 1000); // 15 minutes
+
+    // Insert into database
+    await supabase(env, 'device_auth_codes', {
+      method: 'POST',
+      body: {
+        code,
+        expires_at: expiresAt.toISOString(),
+        activated: false
+      }
+    });
+
+    return jsonResponse({
+      code,
+      verification_url: `${env.FRONTEND_URL}/link`,
+      expires_in: 900, // seconds
+      interval: 5 // poll every 5 seconds
+    });
+  } catch (err) {
+    console.error('Error generating device code:', err);
+    return errorResponse('Failed to generate device code', 500);
+  }
+}
+
+// GET /api/device/poll?code=1234 - Check if code has been activated
+async function handlePollDeviceCode(request, env) {
+  const url = new URL(request.url);
+  const code = url.searchParams.get('code');
+
+  if (!code) {
+    return errorResponse('Code parameter required', 400);
+  }
+
+  try {
+    // Look up code in database
+    const deviceCode = await supabase(env, 'device_auth_codes', {
+      method: 'GET',
+      query: `code=eq.${code}`,
+      single: true
+    });
+
+    if (!deviceCode) {
+      return errorResponse('Invalid code', 404);
+    }
+
+    // Check if expired
+    const expiresAt = new Date(deviceCode.expires_at);
+    if (expiresAt < new Date()) {
+      return errorResponse('Code expired', 410);
+    }
+
+    // Check if activated
+    if (deviceCode.activated && deviceCode.auth_token) {
+      // Return user info if we have it
+      let user = null;
+      let plexConnection = null;
+      let iptvConnection = null;
+
+      if (deviceCode.user_id) {
+        try {
+          // Fetch user data
+          user = await supabase(env, 'users', {
+            method: 'GET',
+            query: `id=eq.${deviceCode.user_id}`,
+            single: true
+          });
+
+          // Fetch Plex connection
+          try {
+            plexConnection = await supabase(env, 'plex_connections', {
+              method: 'GET',
+              query: `user_id=eq.${deviceCode.user_id}`,
+              single: true
+            });
+          } catch (err) {
+            // No Plex connection is okay
+            if (!err.message.includes('PGRST116')) {
+              console.error('Error fetching Plex connection:', err);
+            }
+          }
+
+          // Fetch IPTV connection
+          try {
+            iptvConnection = await supabase(env, 'iptv_connections', {
+              method: 'GET',
+              query: `user_id=eq.${deviceCode.user_id}`,
+              single: true
+            });
+          } catch (err) {
+            // No IPTV connection is okay
+            if (!err.message.includes('PGRST116')) {
+              console.error('Error fetching IPTV connection:', err);
+            }
+          }
+
+        } catch (err) {
+          console.error('Error fetching user:', err);
+        }
+      }
+
+      return jsonResponse({
+        activated: true,
+        auth_token: deviceCode.auth_token,
+        user: user ? {
+          id: user.id,
+          email: user.email,
+          subscription_tier: user.subscription_tier
+        } : null,
+        plex_connection: plexConnection ? {
+          plex_user_id: plexConnection.plex_user_id,
+          plex_username: plexConnection.plex_username,
+          plex_email: plexConnection.plex_email,
+          plex_token: plexConnection.plex_token
+        } : null,
+        iptv_connection: iptvConnection ? {
+          provider_name: iptvConnection.provider_name,
+          connection_type: iptvConnection.connection_type,
+          m3u_url: iptvConnection.m3u_url,
+          xtream_host: iptvConnection.xtream_host,
+          xtream_username: iptvConnection.xtream_username,
+          xtream_password: iptvConnection.xtream_password
+        } : null
+      });
+    }
+
+    // Not activated yet, return time remaining
+    const expiresIn = Math.floor((expiresAt - new Date()) / 1000);
+    return jsonResponse({
+      activated: false,
+      expires_in: expiresIn
+    });
+
+  } catch (err) {
+    console.error('Error polling device code:', err);
+    return errorResponse('Failed to check code status', 500);
+  }
+}
+
+// POST /api/device/activate - Activate device code (requires user auth)
+async function handleActivateDevice(request, env) {
+  try {
+    const body = await request.json();
+    const { code } = body;
+
+    if (!code) {
+      return errorResponse('Code required', 400);
+    }
+
+    // Get authorization header (Supabase session token)
+    const authHeader = request.headers.get('Authorization');
+    if (!authHeader || !authHeader.startsWith('Bearer ')) {
+      return errorResponse('Unauthorized', 401);
+    }
+
+    const sessionToken = authHeader.substring(7);
+
+    // Verify session with Supabase
+    const sessionResponse = await fetch(`${env.SUPABASE_URL}/auth/v1/user`, {
+      headers: {
+        'Authorization': `Bearer ${sessionToken}`,
+        'apikey': env.SUPABASE_ANON_KEY
+      }
+    });
+
+    if (!sessionResponse.ok) {
+      return errorResponse('Invalid session', 401);
+    }
+
+    const sessionUser = await sessionResponse.json();
+
+    // Get user record from our users table
+    const user = await supabase(env, 'users', {
+      method: 'GET',
+      query: `auth_id=eq.${sessionUser.id}`,
+      single: true
+    });
+
+    if (!user) {
+      return errorResponse('User not found', 404);
+    }
+
+    // Look up device code
+    const deviceCode = await supabase(env, 'device_auth_codes', {
+      method: 'GET',
+      query: `code=eq.${code}`,
+      single: true
+    });
+
+    if (!deviceCode) {
+      return errorResponse('Invalid code', 404);
+    }
+
+    // Check if expired
+    const expiresAt = new Date(deviceCode.expires_at);
+    if (expiresAt < new Date()) {
+      return errorResponse('Code expired', 410);
+    }
+
+    // Check if already activated
+    if (deviceCode.activated) {
+      return errorResponse('Code already used', 409);
+    }
+
+    // Generate auth token for TV app
+    const authToken = crypto.randomUUID();
+
+    // Update device code - mark as activated
+    await supabase(env, 'device_auth_codes', {
+      method: 'PATCH',
+      query: `id=eq.${deviceCode.id}`,
+      body: {
+        activated: true,
+        user_id: user.id,
+        auth_token: authToken,
+        activated_at: new Date().toISOString()
+      }
+    });
+
+    return jsonResponse({
+      success: true,
+      message: 'Device activated successfully'
+    });
+
+  } catch (err) {
+    console.error('Error activating device:', err);
+    return errorResponse('Failed to activate device', 500);
+  }
+}
+
 // Main router
 export default {
   async fetch(request, env, ctx) {
@@ -1336,6 +1608,17 @@ export default {
       }
       if (path === '/api/plex/auth/check' && method === 'GET') {
         return handlePlexAuthCheck(request);
+      }
+
+      // Device authentication (TV app)
+      if (path === '/api/device/code' && method === 'POST') {
+        return handleGenerateDeviceCode(env);
+      }
+      if (path === '/api/device/poll' && method === 'GET') {
+        return handlePollDeviceCode(request, env);
+      }
+      if (path === '/api/device/activate' && method === 'POST') {
+        return handleActivateDevice(request, env);
       }
 
       // Customer signup (public)

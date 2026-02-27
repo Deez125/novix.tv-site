@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-PandaTV - a subscription management system for a hosted Plex server. Users subscribe via Stripe, and when they cancel (or payment fails), they are automatically removed from the Plex server.
+NovixTV - a subscription management system for a hosted Plex server. Users subscribe via Stripe, and when they cancel (or payment fails), they are automatically removed from the Plex server.
 
 **GitHub:** https://github.com/Deez125/PandaTV-Site
 
@@ -47,7 +47,7 @@ cd frontend
 npm install
 npm run dev                     # Local dev server (http://localhost:6969)
 npm run build                   # Production build
-wrangler pages deploy dist --project-name panda-tv
+wrangler pages deploy dist --project-name novix-tv
 ```
 
 ## Architecture
@@ -100,7 +100,7 @@ Library IDs are local Plex keys (e.g., 1, 3, 4). The worker converts these to pl
 All calls go to `https://plex.tv` with headers:
 ```
 X-Plex-Token: {PLEX_TOKEN}
-X-Plex-Client-Identifier: panda-tv
+X-Plex-Client-Identifier: novix-tv
 Accept: application/json
 ```
 

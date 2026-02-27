@@ -88,7 +88,7 @@ export default function Signup() {
         {/* Header */}
         <div className="text-center mb-8">
           <button onClick={goHome} className="text-3xl font-bold mb-2">
-            <span className="text-violet-400">Panda</span>TV
+            <span className="text-violet-400">Novix</span>TV
           </button>
           <p className="text-slate-400">Create your account</p>
         </div>

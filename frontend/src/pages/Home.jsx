@@ -56,20 +56,20 @@ const ZapIcon = () => (
 // FAQ Data
 const faqItems = [
   {
-    question: "What is PandaTV?",
-    answer: "PandaTV is a premium streaming app that unifies your Plex libraries and IPTV providers into one beautiful interface. Access all your content from a single app on any device."
+    question: "What is NovixTV?",
+    answer: "NovixTV is a premium streaming app that unifies your Plex libraries and IPTV providers into one beautiful interface. Access all your content from a single app on any device."
   },
   {
     question: "What devices are supported?",
-    answer: "PandaTV works on Smart TVs (Samsung, LG, Sony, etc.), iOS (iPhone & iPad), Android phones and tablets, Apple TV, Fire TV, Roku, and web browsers. Watch anywhere, anytime."
+    answer: "NovixTV works on Smart TVs (Samsung, LG, Sony, etc.), iOS (iPhone & iPad), Android phones and tablets, Apple TV, Fire TV, Roku, and web browsers. Watch anywhere, anytime."
   },
   {
     question: "How do I connect my Plex library?",
-    answer: "After subscribing, go to Account Settings and link your Plex account with one click. Your entire library will appear instantly in the PandaTV app."
+    answer: "After subscribing, go to Account Settings and link your Plex account with one click. Your entire library will appear instantly in the NovixTV app."
   },
   {
     question: "Can I use my own IPTV provider?",
-    answer: "Yes! PandaTV supports M3U playlists and Xtream Codes. Simply add your IPTV credentials in the app settings and your live TV channels will be integrated seamlessly."
+    answer: "Yes! NovixTV supports M3U playlists and Xtream Codes. Simply add your IPTV credentials in the app settings and your live TV channels will be integrated seamlessly."
   },
   {
     question: "Can I cancel anytime?",
@@ -77,7 +77,7 @@ const faqItems = [
   },
   {
     question: "Is there a free trial?",
-    answer: "We offer a 7-day free trial for new subscribers. Experience all PandaTV features before committing. Cancel anytime during the trial and you won't be charged."
+    answer: "We offer a 7-day free trial for new subscribers. Experience all NovixTV features before committing. Cancel anytime during the trial and you won't be charged."
   }
 ];
 
@@ -177,7 +177,7 @@ export default function Home() {
       <nav className="border-b border-slate-800/50">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
           <h1 className="text-2xl font-bold">
-            <span className="text-violet-400">Panda</span>TV
+            <span className="text-violet-400">Novix</span>TV
           </h1>
           {user ? (
             <div className="relative" ref={profileMenuRef}>
@@ -326,7 +326,7 @@ export default function Home() {
         <div className="max-w-5xl mx-auto">
           <h3 className="text-3xl font-bold text-center mb-4">Everything You Need</h3>
           <p className="text-slate-400 text-center mb-12 max-w-2xl mx-auto">
-            PandaTV brings all your streaming content together in one powerful app.
+            NovixTV brings all your streaming content together in one powerful app.
           </p>
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-6">
@@ -507,7 +507,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto text-center">
           <h3 className="text-3xl font-bold mb-4">Ready to Get Started?</h3>
           <p className="text-slate-400 mb-8 max-w-xl mx-auto">
-            Join thousands of users who have unified their streaming experience with PandaTV.
+            Join thousands of users who have unified their streaming experience with NovixTV.
           </p>
           <button
             onClick={handleSignupClick}
@@ -523,10 +523,10 @@ export default function Home() {
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
             <div className="text-2xl font-bold">
-              <span className="text-violet-400">Panda</span>TV
+              <span className="text-violet-400">Novix</span>TV
             </div>
             <div className="text-slate-500 text-sm">
-              &copy; {new Date().getFullYear()} PandaTV. All rights reserved.
+              &copy; {new Date().getFullYear()} NovixTV. All rights reserved.
             </div>
           </div>
         </div>

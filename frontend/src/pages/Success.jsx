@@ -50,7 +50,7 @@ export default function Success() {
         {/* Header */}
         <div className="mb-8">
           <button onClick={goHome} className="text-3xl font-bold mb-2">
-            <span className="text-violet-400">Panda</span>TV
+            <span className="text-violet-400">Novix</span>TV
           </button>
         </div>
 
@@ -71,7 +71,7 @@ export default function Success() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                 </svg>
               </div>
-              <h2 className="text-xl font-semibold mb-2">Welcome to PandaTV!</h2>
+              <h2 className="text-xl font-semibold mb-2">Welcome to NovixTV!</h2>
               <p className="text-slate-400 mb-6">
                 Your subscription is now active. Head to your account to connect your Plex library and start streaming.
               </p>

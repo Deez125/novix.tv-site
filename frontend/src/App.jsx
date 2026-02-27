@@ -7,6 +7,7 @@ import Login from './pages/Login';
 import Signup from './pages/Signup';
 import Success from './pages/Success';
 import Account from './pages/Account';
+import Link from './pages/Link';
 import CompleteProfileModal from './components/CompleteProfileModal';
 
 // Simple hash-based router
@@ -33,7 +34,7 @@ function AdminLayout() {
         <div className="max-w-7xl mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <h1 className="text-xl font-bold">
-              <span className="text-violet-400">PandaTV</span> Manager
+              <span className="text-violet-400">NovixTV</span> Manager
             </h1>
             <nav className="flex gap-1">
               <button
@@ -91,6 +92,8 @@ function Router() {
     content = <Success />;
   } else if (route === '/account') {
     content = <Account />;
+  } else if (route === '/link') {
+    content = <Link />;
   } else if (route === '/admin') {
     content = <AdminLayout />;
   } else {

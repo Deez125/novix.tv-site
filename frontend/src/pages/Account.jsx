@@ -366,7 +366,7 @@ export default function Account() {
       <nav className="border-b border-slate-800/50">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center justify-between">
           <button onClick={goHome} className="text-2xl font-bold">
-            <span className="text-violet-400">Panda</span>TV
+            <span className="text-violet-400">Novix</span>TV
           </button>
         </div>
       </nav>
@@ -471,7 +471,7 @@ export default function Account() {
 
             {!plexConnected && !plexConnecting && (
               <p className="mt-3 text-xs text-slate-500">
-                Connect your Plex account to access your libraries through PandaTV
+                Connect your Plex account to access your libraries through NovixTV
               </p>
             )}
           </div>
@@ -661,7 +661,7 @@ export default function Account() {
           <p className="text-sm text-slate-500 mb-4">
             {userData?.subscription_tier === 'basic'
               ? 'You have access to all premium features'
-              : 'Subscribe to PandaTV to access premium features'
+              : 'Subscribe to NovixTV to access premium features'
             }
           </p>
           {userData?.subscription_tier !== 'basic' && (
