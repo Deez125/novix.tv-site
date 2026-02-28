@@ -1,5 +1,13 @@
 import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../lib/auth';
+import { FaGear, FaLink } from 'react-icons/fa6';
+import { IoMdHelpCircleOutline } from 'react-icons/io';
+import { IoTvOutline, IoPhonePortraitOutline } from 'react-icons/io5';
+import { BsGlobe } from 'react-icons/bs';
+import { FaApple, FaGoogle } from 'react-icons/fa';
+import { SiRoku, SiAmazonfiretv } from 'react-icons/si';
+import { MdDevices } from 'react-icons/md';
+import { LuLibraryBig } from 'react-icons/lu';
 
 const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8787';
 
@@ -77,7 +85,7 @@ const faqItems = [
   },
   {
     question: "Is there a free trial?",
-    answer: "We offer a 7-day free trial for new subscribers. Experience all NovixTV features before committing. Cancel anytime during the trial and you won't be charged."
+    answer: "We offer a 14-day free trial for new subscribers. Experience all NovixTV features before committing. Cancel anytime during the trial and you won't be charged."
   }
 ];
 
@@ -154,6 +162,12 @@ export default function Home() {
     window.dispatchEvent(new PopStateEvent('popstate'));
   };
 
+  const goToLink = () => {
+    setShowProfileMenu(false);
+    window.history.pushState({}, '', '/link');
+    window.dispatchEvent(new PopStateEvent('popstate'));
+  };
+
   const handleLogout = async () => {
     setShowProfileMenu(false);
     await signOut();
@@ -211,19 +225,21 @@ export default function Home() {
                     onClick={goToAccount}
                     className="w-full text-left px-4 py-2 text-sm hover:bg-slate-700 transition flex items-center gap-2"
                   >
-                    <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
+                    <FaGear className="w-4 h-4 text-slate-400" />
                     Account Settings
+                  </button>
+                  <button
+                    onClick={goToLink}
+                    className="w-full text-left px-4 py-2 text-sm hover:bg-slate-700 transition flex items-center gap-2"
+                  >
+                    <FaLink className="w-4 h-4 text-slate-400" />
+                    Link Device
                   </button>
                   <button
                     onClick={() => {}}
                     className="w-full text-left px-4 py-2 text-sm hover:bg-slate-700 transition flex items-center gap-2 text-slate-400"
                   >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8.228 9c.549-1.165 2.03-2 3.772-2 2.21 0 4 1.343 4 3 0 1.4-1.278 2.575-3.006 2.907-.542.104-.994.54-.994 1.093m0 3h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
+                    <IoMdHelpCircleOutline className="w-4 h-4" />
                     Help
                   </button>
                   <button
@@ -288,22 +304,32 @@ export default function Home() {
           <p className="text-center text-slate-500 text-sm mb-6">Available on all your favorite platforms</p>
           <div className="flex items-center justify-center gap-8 flex-wrap text-slate-400">
             <div className="flex items-center gap-2">
-              <TvIcon />
+              <IoTvOutline className="w-6 h-6" />
               <span className="text-sm">Smart TV</span>
             </div>
             <div className="flex items-center gap-2">
-              <PhoneIcon />
+              <IoPhonePortraitOutline className="w-6 h-6" />
               <span className="text-sm">iOS & Android</span>
             </div>
             <div className="flex items-center gap-2">
-              <GlobeIcon />
+              <BsGlobe className="w-6 h-6" />
               <span className="text-sm">Web Browser</span>
             </div>
             <div className="flex items-center gap-2">
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M13 3.5c.73-.83 1.94-1.46 2.94-1.5.13 1.17-.34 2.35-1.04 3.19-.69.85-1.83 1.51-2.95 1.42-.15-1.15.41-2.35 1.05-3.11z"/>
-              </svg>
+              <FaApple className="w-6 h-6" />
               <span className="text-sm">Apple TV</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <FaGoogle className="w-6 h-6" />
+              <span className="text-sm">Google TV</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <SiRoku className="w-6 h-6" />
+              <span className="text-sm">Roku</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <SiAmazonfiretv className="w-6 h-6" />
+              <span className="text-sm">Fire TV</span>
             </div>
           </div>
         </div>
@@ -319,7 +345,7 @@ export default function Home() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
             <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-6">
               <div className="w-12 h-12 bg-violet-500/20 rounded-lg flex items-center justify-center mb-4 text-violet-400">
-                <LinkIcon />
+                <LuLibraryBig className="w-6 h-6" />
               </div>
               <h4 className="text-lg font-semibold mb-2">Connect Libraries</h4>
               <p className="text-slate-400 text-sm">
@@ -328,7 +354,7 @@ export default function Home() {
             </div>
             <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-6">
               <div className="w-12 h-12 bg-violet-500/20 rounded-lg flex items-center justify-center mb-4 text-violet-400">
-                <TvIcon />
+                <IoTvOutline className="w-6 h-6" />
               </div>
               <h4 className="text-lg font-semibold mb-2">Live TV</h4>
               <p className="text-slate-400 text-sm">
@@ -346,7 +372,7 @@ export default function Home() {
             </div>
             <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-6">
               <div className="w-12 h-12 bg-violet-500/20 rounded-lg flex items-center justify-center mb-4 text-violet-400">
-                <PhoneIcon />
+                <MdDevices className="w-6 h-6" />
               </div>
               <h4 className="text-lg font-semibold mb-2">Any Device</h4>
               <p className="text-slate-400 text-sm">
@@ -371,7 +397,7 @@ export default function Home() {
               </div>
               <h4 className="text-lg font-semibold mb-2">Create Account</h4>
               <p className="text-slate-400 text-sm">
-                Sign up with email or your favorite social account. Start your free trial instantly.
+                Sign up with email or your favorite social account. Start your 14-day free trial instantly.
               </p>
             </div>
             <div className="text-center">
@@ -401,7 +427,7 @@ export default function Home() {
         <div className="max-w-4xl mx-auto">
           <div className="text-center mb-12">
             <h3 className="text-3xl font-bold mb-4">Simple Pricing</h3>
-            <p className="text-slate-400">Start with a 7-day free trial. Cancel anytime.</p>
+            <p className="text-slate-400">Start with a 14-day free trial. Cancel anytime.</p>
           </div>
 
           <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
@@ -450,7 +476,7 @@ export default function Home() {
                   </li>
                   <li className="flex items-center gap-3">
                     <CheckIcon />
-                    <span>7-day free trial</span>
+                    <span>14-day free trial</span>
                   </li>
                 </ul>
                 <button
