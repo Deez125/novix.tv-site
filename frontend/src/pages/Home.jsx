@@ -125,7 +125,6 @@ export default function Home() {
   const { user, signOut, loading } = useAuth();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
-  const [logoVersion, setLogoVersion] = useState('logo.svg');
   const profileMenuRef = useRef(null);
 
   // Close profile menu when clicking outside
@@ -174,37 +173,10 @@ export default function Home() {
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
-      {/* Logo Debug Panel */}
-      <div className="fixed bottom-4 right-4 bg-slate-800 border border-slate-700 rounded-lg p-3 z-50 shadow-xl">
-        <div className="text-xs text-slate-400 mb-2 font-semibold">Logo Debug</div>
-        <div className="flex gap-2">
-          <button
-            onClick={() => setLogoVersion('logo.svg')}
-            className={`px-3 py-1 text-xs rounded transition ${
-              logoVersion === 'logo.svg'
-                ? 'bg-violet-600 text-white'
-                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-            }`}
-          >
-            Logo 1
-          </button>
-          <button
-            onClick={() => setLogoVersion('logo2.svg')}
-            className={`px-3 py-1 text-xs rounded transition ${
-              logoVersion === 'logo2.svg'
-                ? 'bg-violet-600 text-white'
-                : 'bg-slate-700 text-slate-300 hover:bg-slate-600'
-            }`}
-          >
-            Logo 2
-          </button>
-        </div>
-      </div>
-
       {/* Navigation */}
       <nav className="border-b border-slate-800/50">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <img src={`/${logoVersion}`} alt="NovixTV" className="h-8" />
+          <img src="/logo2.svg" alt="NovixTV" className="h-8" />
           {user ? (
             <div className="relative" ref={profileMenuRef}>
               <button
@@ -548,7 +520,7 @@ export default function Home() {
       <footer className="py-10 px-4 border-t border-slate-800/50 bg-slate-900/50">
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <img src={`/${logoVersion}`} alt="NovixTV" className="h-8" />
+            <img src="/logo2.svg" alt="NovixTV" className="h-8" />
             <div className="text-slate-500 text-sm">
               &copy; {new Date().getFullYear()} NovixTV. All rights reserved.
             </div>
