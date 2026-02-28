@@ -87,8 +87,8 @@ export default function Signup() {
       <div className="w-full max-w-md">
         {/* Header */}
         <div className="text-center mb-8">
-          <button onClick={goHome} className="text-3xl font-bold mb-2">
-            <span className="text-violet-400">Novix</span>TV
+          <button onClick={goHome} className="inline-block mb-2">
+            <img src="/logo2.svg" alt="NovixTV" className="h-10 mx-auto" />
           </button>
           <p className="text-slate-400">Create your account</p>
         </div>

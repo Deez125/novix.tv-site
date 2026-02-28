@@ -57,15 +57,15 @@ const ZapIcon = () => (
 const faqItems = [
   {
     question: "What is NovixTV?",
-    answer: "NovixTV is a premium streaming app that unifies your Plex libraries and IPTV providers into one beautiful interface. Access all your content from a single app on any device."
+    answer: "NovixTV is a premium streaming app that unifies your Plex, Jellyfin, Emby, and IPTV providers into one beautiful interface. Access all your content from a single app on any device."
   },
   {
     question: "What devices are supported?",
-    answer: "NovixTV works on Smart TVs (Samsung, LG, Sony, etc.), iOS (iPhone & iPad), Android phones and tablets, Apple TV, Fire TV, Roku, and web browsers. Watch anywhere, anytime."
+    answer: "NovixTV works on Smart TVs (Samsung, LG, Sony, etc.), iOS (iPhone & iPad), Android phones and tablets, Apple TV, Roku, and web browsers. Watch anywhere, anytime."
   },
   {
-    question: "How do I connect my Plex library?",
-    answer: "After subscribing, go to Account Settings and link your Plex account with one click. Your entire library will appear instantly in the NovixTV app."
+    question: "How do I connect my media libraries?",
+    answer: "After subscribing, go to Account Settings and link your Plex, Jellyfin, or Emby account with one click. Your entire library will appear instantly in the NovixTV app."
   },
   {
     question: "Can I use my own IPTV provider?",
@@ -244,13 +244,13 @@ export default function Home() {
                 onClick={handleLoginClick}
                 className="px-4 py-2 text-slate-300 hover:text-white transition"
               >
-                Sign In
+                Log In
               </button>
               <button
                 onClick={handleSignupClick}
                 className="px-4 py-2 bg-violet-600 hover:bg-violet-500 rounded-lg font-medium transition"
               >
-                Get Started
+                Sign Up
               </button>
             </div>
           )}
@@ -260,24 +260,20 @@ export default function Home() {
       {/* Hero Section */}
       <section className="py-20 px-4">
         <div className="max-w-4xl mx-auto text-center">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-violet-500/10 border border-violet-500/30 rounded-full mb-6">
-            <span className="text-violet-400 text-sm font-medium">Now available on all platforms</span>
-          </div>
           <h2 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
             All Your Streaming,
             <span className="text-violet-400"> One App</span>
           </h2>
           <p className="text-xl text-slate-400 mb-8 max-w-2xl mx-auto">
-            Connect your Plex libraries and IPTV providers.
+            Connect your Plex, Jellyfin, Emby, and IPTV providers.
             Watch everything in one beautiful, unified experience on any device.
           </p>
           <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
             <button
               onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
-              className="px-8 py-4 bg-violet-600 hover:bg-violet-500 rounded-lg font-semibold text-lg transition flex items-center gap-2"
+              className="px-8 py-4 bg-violet-600 hover:bg-violet-500 rounded-lg font-semibold text-lg transition"
             >
-              <PlayIcon />
-              Start Free Trial
+              Get Started
             </button>
             <button className="px-8 py-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg font-semibold text-lg transition">
               Watch Demo
@@ -309,12 +305,6 @@ export default function Home() {
               </svg>
               <span className="text-sm">Apple TV</span>
             </div>
-            <div className="flex items-center gap-2">
-              <svg className="w-6 h-6" fill="currentColor" viewBox="0 0 24 24">
-                <path d="M12.04 3.5c.59 0 1.2.04 1.82.13 3.49.49 6.37 2.87 7.43 6.14.35 1.08.53 2.18.53 3.31 0 .55-.04 1.09-.11 1.62-.44 3.25-2.41 5.97-5.24 7.38-.77.38-1.58.68-2.43.88-.59.14-1.2.21-1.82.21-.62 0-1.23-.07-1.82-.21-.85-.2-1.66-.5-2.43-.88-2.83-1.41-4.8-4.13-5.24-7.38-.07-.53-.11-1.07-.11-1.62 0-1.13.18-2.23.53-3.31 1.06-3.27 3.94-5.65 7.43-6.14.62-.09 1.23-.13 1.82-.13m0-1.5c-.7 0-1.42.05-2.13.16-4.06.58-7.43 3.35-8.69 7.22-.42 1.28-.64 2.61-.64 3.95 0 .66.04 1.31.13 1.94.52 3.86 2.86 7.11 6.15 8.75.9.45 1.85.8 2.84 1.03.7.17 1.42.25 2.13.25.71 0 1.43-.08 2.13-.25.99-.23 1.94-.58 2.84-1.03 3.29-1.64 5.63-4.89 6.15-8.75.09-.63.13-1.28.13-1.94 0-1.34-.22-2.67-.64-3.95-1.26-3.87-4.63-6.64-8.69-7.22-.71-.11-1.43-.16-2.13-.16z"/>
-              </svg>
-              <span className="text-sm">Fire TV</span>
-            </div>
           </div>
         </div>
       </section>
@@ -331,9 +321,9 @@ export default function Home() {
               <div className="w-12 h-12 bg-violet-500/20 rounded-lg flex items-center justify-center mb-4 text-violet-400">
                 <LinkIcon />
               </div>
-              <h4 className="text-lg font-semibold mb-2">Connect Plex</h4>
+              <h4 className="text-lg font-semibold mb-2">Connect Libraries</h4>
               <p className="text-slate-400 text-sm">
-                Link your Plex libraries and access all your media in one place.
+                Link your Plex, Jellyfin, or Emby libraries and access all your media in one place.
               </p>
             </div>
             <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-6">
@@ -390,7 +380,7 @@ export default function Home() {
               </div>
               <h4 className="text-lg font-semibold mb-2">Connect Services</h4>
               <p className="text-slate-400 text-sm">
-                Link your Plex account and add your IPTV provider credentials.
+                Link your Plex, Jellyfin, Emby, or IPTV provider credentials.
               </p>
             </div>
             <div className="text-center">
@@ -448,7 +438,7 @@ export default function Home() {
                   </li>
                   <li className="flex items-center gap-3">
                     <CheckIcon />
-                    <span>Unlimited Plex libraries</span>
+                    <span>Plex, Jellyfin & Emby support</span>
                   </li>
                   <li className="flex items-center gap-3">
                     <CheckIcon />
