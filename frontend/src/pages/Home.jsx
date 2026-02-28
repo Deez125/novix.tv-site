@@ -176,9 +176,7 @@ export default function Home() {
       {/* Navigation */}
       <nav className="border-b border-slate-800/50">
         <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <h1 className="text-2xl font-bold">
-            <span className="text-violet-400">Novix</span>TV
-          </h1>
+          <img src="/logo.svg" alt="NovixTV" className="h-8" />
           {user ? (
             <div className="relative" ref={profileMenuRef}>
               <button
@@ -522,9 +520,7 @@ export default function Home() {
       <footer className="py-10 px-4 border-t border-slate-800/50 bg-slate-900/50">
         <div className="max-w-5xl mx-auto">
           <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <div className="text-2xl font-bold">
-              <span className="text-violet-400">Novix</span>TV
-            </div>
+            <img src="/logo.svg" alt="NovixTV" className="h-8" />
             <div className="text-slate-500 text-sm">
               &copy; {new Date().getFullYear()} NovixTV. All rights reserved.
             </div>
