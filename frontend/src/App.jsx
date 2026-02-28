@@ -8,6 +8,7 @@ import Signup from './pages/Signup';
 import Success from './pages/Success';
 import Account from './pages/Account';
 import Link from './pages/Link';
+import NotFound from './pages/NotFound';
 import CompleteProfileModal from './components/CompleteProfileModal';
 
 // Simple hash-based router
@@ -97,8 +98,8 @@ function Router() {
   } else if (route === '/admin') {
     content = <AdminLayout />;
   } else {
-    // 404 fallback - redirect to home
-    content = <Home />;
+    // 404 fallback
+    content = <NotFound />;
   }
 
   return (
