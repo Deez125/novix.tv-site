@@ -1812,6 +1812,9 @@ async function handleGetPlexFeatured(request, env) {
       }
     }
 
+    // For episodes, get the show's logo (grandparentTheme)
+    const logoPath = isEpisode && featuredItem.grandparentTheme ? featuredItem.grandparentTheme : featuredItem.theme;
+
     // Format the response
     const formatted = {
       id: featuredItem.ratingKey,
@@ -1823,6 +1826,7 @@ async function handleGetPlexFeatured(request, env) {
       genres: genres,
       thumb: thumbPath ? `${plexConnection.plex_server_url}${thumbPath}?X-Plex-Token=${plexConnection.plex_token}` : null,
       art: artPath ? `${plexConnection.plex_server_url}${artPath}?X-Plex-Token=${plexConnection.plex_token}` : null,
+      logo: logoPath ? `${plexConnection.plex_server_url}${logoPath}?X-Plex-Token=${plexConnection.plex_token}` : null,
     };
 
     return jsonResponse({ featured: formatted });
