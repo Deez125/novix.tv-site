@@ -1040,6 +1040,7 @@ async function handleGetPlexServers(request) {
     const response = await fetch('https://plex.tv/api/v2/resources?includeHttps=1&includeRelay=1', {
       headers: {
         'X-Plex-Token': authToken,
+        'X-Plex-Client-Identifier': 'novix-tv-worker',
         'Accept': 'application/json',
       },
     });
