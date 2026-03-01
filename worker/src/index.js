@@ -1773,11 +1773,44 @@ async function handleGetPlexFeatured(request, env) {
     // Pick a random item
     const featuredItem = items[Math.floor(Math.random() * items.length)];
 
+    console.log('Featured item type:', featuredItem.type);
+    console.log('Featured item title:', featuredItem.title);
+    console.log('Featured item grandparentTitle:', featuredItem.grandparentTitle);
+    console.log('Featured item genres:', featuredItem.Genre);
+
     // For episodes, use the show's title, art, and genres
     const isEpisode = featuredItem.type === 'episode';
-    const title = isEpisode ? featuredItem.grandparentTitle : featuredItem.title;
+    const title = isEpisode ? (featuredItem.grandparentTitle || featuredItem.title) : featuredItem.title;
     const artPath = isEpisode && featuredItem.grandparentArt ? featuredItem.grandparentArt : featuredItem.art;
     const thumbPath = isEpisode && featuredItem.grandparentThumb ? featuredItem.grandparentThumb : featuredItem.thumb;
+
+    let genres = featuredItem.Genre?.map(g => g.tag) || [];
+
+    // If it's an episode and has no genres, fetch the show's metadata to get genres
+    if (isEpisode && genres.length === 0 && featuredItem.grandparentRatingKey) {
+      try {
+        const showResponse = await fetch(
+          `${plexConnection.plex_server_url}/library/metadata/${featuredItem.grandparentRatingKey}`,
+          {
+            headers: {
+              'X-Plex-Token': plexConnection.plex_token,
+              'Accept': 'application/json',
+            },
+          }
+        );
+
+        if (showResponse.ok) {
+          const showData = await showResponse.json();
+          const show = showData.MediaContainer?.Metadata?.[0];
+          if (show?.Genre) {
+            genres = show.Genre.map(g => g.tag);
+            console.log('Fetched genres from show:', genres);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch show genres:', err);
+      }
+    }
 
     // Format the response
     const formatted = {
@@ -1787,7 +1820,7 @@ async function handleGetPlexFeatured(request, env) {
       year: featuredItem.year,
       summary: featuredItem.summary,
       rating: featuredItem.contentRating,
-      genres: featuredItem.Genre?.map(g => g.tag) || [],
+      genres: genres,
       thumb: thumbPath ? `${plexConnection.plex_server_url}${thumbPath}?X-Plex-Token=${plexConnection.plex_token}` : null,
       art: artPath ? `${plexConnection.plex_server_url}${artPath}?X-Plex-Token=${plexConnection.plex_token}` : null,
     };
