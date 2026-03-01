@@ -1050,9 +1050,9 @@ async function handleGetPlexServers(request) {
 
     const servers = await response.json();
 
-    // Filter for servers with 'server' product type and owned by the user
+    // Filter for servers with 'Plex Media Server' product type
     const plexServers = servers
-      .filter(resource => resource.product === 'Plex Media Server' && resource.provides === 'server')
+      .filter(resource => resource.product === 'Plex Media Server')
       .map(server => ({
         name: server.name,
         clientIdentifier: server.clientIdentifier,
