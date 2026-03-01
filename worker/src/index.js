@@ -1777,6 +1777,7 @@ async function handleGetPlexFeatured(request, env) {
     console.log('Featured item title:', featuredItem.title);
     console.log('Featured item grandparentTitle:', featuredItem.grandparentTitle);
     console.log('Featured item genres:', featuredItem.Genre);
+    console.log('Featured item keys:', Object.keys(featuredItem));
 
     // For episodes, use the show's title, art, and genres
     const isEpisode = featuredItem.type === 'episode';
@@ -1812,8 +1813,36 @@ async function handleGetPlexFeatured(request, env) {
       }
     }
 
-    // For episodes, get the show's logo (grandparentTheme)
-    const logoPath = isEpisode && featuredItem.grandparentTheme ? featuredItem.grandparentTheme : featuredItem.theme;
+    // Fetch full metadata to get the logo/title card
+    let logoPath = null;
+    try {
+      const metadataKey = isEpisode ? featuredItem.grandparentRatingKey : featuredItem.ratingKey;
+      if (metadataKey) {
+        const metadataResponse = await fetch(
+          `${plexConnection.plex_server_url}/library/metadata/${metadataKey}?includeExtras=1`,
+          {
+            headers: {
+              'X-Plex-Token': plexConnection.plex_token,
+              'Accept': 'application/json',
+            },
+          }
+        );
+
+        if (metadataResponse.ok) {
+          const metadataData = await metadataResponse.json();
+          const metadata = metadataData.MediaContainer?.Metadata?.[0];
+
+          // Plex stores the logo in the Image array with type "clearLogo"
+          const logoImage = metadata?.Image?.find(img => img.type === 'clearLogo');
+          if (logoImage?.url) {
+            logoPath = logoImage.url;
+            console.log('Found logo:', logoPath);
+          }
+        }
+      }
+    } catch (err) {
+      console.error('Failed to fetch logo:', err);
+    }
 
     // Format the response
     const formatted = {
