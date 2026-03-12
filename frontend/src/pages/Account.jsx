@@ -820,7 +820,7 @@ export default function Account() {
           <div className="p-4 bg-slate-900 rounded-lg border border-slate-700 mt-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <img src="/icons/jelllyfin.svg" alt="Jellyfin" className="w-10 h-10 rounded-lg" />
+                <img src="/icons/jellyfin.svg" alt="Jellyfin" className="w-10 h-10 rounded-lg" />
                 <div>
                   <div className="font-medium">Jellyfin</div>
                   <div className="text-sm text-slate-400">
