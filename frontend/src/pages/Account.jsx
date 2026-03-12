@@ -720,6 +720,21 @@ export default function Account() {
         <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-6">
           <h2 className="text-lg font-semibold mb-4">Connected Accounts</h2>
 
+          {/* Info note about server accessibility */}
+          <div className="mb-4 p-3 bg-slate-900/50 border border-slate-700 rounded-lg">
+            <div className="flex items-start gap-2">
+              <svg className="w-5 h-5 text-blue-400 mt-0.5 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+              <div className="text-sm text-slate-400">
+                <span className="text-slate-300 font-medium">Jellyfin & Emby servers must be publicly accessible.</span>{' '}
+                Local servers (192.168.x.x, localhost) won't work directly. Use{' '}
+                <a href="https://developers.cloudflare.com/cloudflare-one/connections/connect-networks/" target="_blank" rel="noopener noreferrer" className="text-violet-400 hover:text-violet-300 underline">Cloudflare Tunnel</a>,{' '}
+                <a href="https://tailscale.com/kb/1223/funnel" target="_blank" rel="noopener noreferrer" className="text-violet-400 hover:text-violet-300 underline">Tailscale Funnel</a>, or a reverse proxy to expose your server.
+              </div>
+            </div>
+          </div>
+
           {/* Plex Connection */}
           <div className="p-4 bg-slate-900 rounded-lg border border-slate-700">
             <div className="flex items-center justify-between">
