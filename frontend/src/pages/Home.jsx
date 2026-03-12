@@ -4,8 +4,8 @@ import { FaGear, FaLink } from 'react-icons/fa6';
 import { IoMdHelpCircleOutline } from 'react-icons/io';
 import { IoTvOutline, IoPhonePortraitOutline } from 'react-icons/io5';
 import { BsGlobe } from 'react-icons/bs';
-import { FaApple, FaGoogle } from 'react-icons/fa';
-import { SiRoku, SiAmazonfiretv } from 'react-icons/si';
+import { FaApple, FaGoogle, FaAmazon } from 'react-icons/fa';
+import { SiRoku } from 'react-icons/si';
 import { MdDevices } from 'react-icons/md';
 import { LuLibraryBig } from 'react-icons/lu';
 
@@ -328,7 +328,7 @@ export default function Home() {
               <span className="text-sm">Roku</span>
             </div>
             <div className="flex items-center gap-2">
-              <SiAmazonfiretv className="w-6 h-6" />
+              <FaAmazon className="w-6 h-6" />
               <span className="text-sm">Fire TV</span>
             </div>
           </div>

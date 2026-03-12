@@ -1,5 +1,3 @@
-import { TbError404 } from 'react-icons/tb';
-
 export default function NotFound() {
   const goHome = () => {
     window.history.pushState({}, '', '/');
@@ -19,7 +17,7 @@ export default function NotFound() {
         {/* Card */}
         <div className="bg-slate-800/50 rounded-lg border border-slate-700 p-8">
           <div className="w-20 h-20 bg-violet-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-            <TbError404 className="w-12 h-12 text-violet-400" />
+            <span className="text-3xl font-bold text-violet-400">404</span>
           </div>
           <h1 className="text-4xl font-bold mb-2">Page Not Found</h1>
           <p className="text-slate-400 mb-8">
