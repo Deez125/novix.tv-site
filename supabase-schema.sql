@@ -127,6 +127,92 @@ CREATE POLICY "Users can delete own iptv connections" ON public.iptv_connections
   );
 
 -- ============================================
+-- JELLYFIN CONNECTIONS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS public.jellyfin_connections (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  server_url TEXT NOT NULL,
+  server_name TEXT,
+  username TEXT NOT NULL,
+  access_token TEXT NOT NULL,
+  user_id_on_server TEXT, -- Jellyfin's internal user ID
+  connected_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id) -- One Jellyfin connection per user
+);
+
+-- Enable Row Level Security
+ALTER TABLE public.jellyfin_connections ENABLE ROW LEVEL SECURITY;
+
+-- Users can read their own Jellyfin connection
+CREATE POLICY "Users can read own jellyfin connection" ON public.jellyfin_connections
+  FOR SELECT USING (
+    user_id IN (SELECT id FROM public.users WHERE auth_id = auth.uid())
+  );
+
+-- Users can insert their own Jellyfin connection
+CREATE POLICY "Users can insert own jellyfin connection" ON public.jellyfin_connections
+  FOR INSERT WITH CHECK (
+    user_id IN (SELECT id FROM public.users WHERE auth_id = auth.uid())
+  );
+
+-- Users can update their own Jellyfin connection
+CREATE POLICY "Users can update own jellyfin connection" ON public.jellyfin_connections
+  FOR UPDATE USING (
+    user_id IN (SELECT id FROM public.users WHERE auth_id = auth.uid())
+  );
+
+-- Users can delete their own Jellyfin connection
+CREATE POLICY "Users can delete own jellyfin connection" ON public.jellyfin_connections
+  FOR DELETE USING (
+    user_id IN (SELECT id FROM public.users WHERE auth_id = auth.uid())
+  );
+
+-- ============================================
+-- EMBY CONNECTIONS TABLE
+-- ============================================
+CREATE TABLE IF NOT EXISTS public.emby_connections (
+  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES public.users(id) ON DELETE CASCADE,
+  server_url TEXT NOT NULL,
+  server_name TEXT,
+  username TEXT NOT NULL,
+  access_token TEXT NOT NULL,
+  user_id_on_server TEXT, -- Emby's internal user ID
+  connected_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(user_id) -- One Emby connection per user
+);
+
+-- Enable Row Level Security
+ALTER TABLE public.emby_connections ENABLE ROW LEVEL SECURITY;
+
+-- Users can read their own Emby connection
+CREATE POLICY "Users can read own emby connection" ON public.emby_connections
+  FOR SELECT USING (
+    user_id IN (SELECT id FROM public.users WHERE auth_id = auth.uid())
+  );
+
+-- Users can insert their own Emby connection
+CREATE POLICY "Users can insert own emby connection" ON public.emby_connections
+  FOR INSERT WITH CHECK (
+    user_id IN (SELECT id FROM public.users WHERE auth_id = auth.uid())
+  );
+
+-- Users can update their own Emby connection
+CREATE POLICY "Users can update own emby connection" ON public.emby_connections
+  FOR UPDATE USING (
+    user_id IN (SELECT id FROM public.users WHERE auth_id = auth.uid())
+  );
+
+-- Users can delete their own Emby connection
+CREATE POLICY "Users can delete own emby connection" ON public.emby_connections
+  FOR DELETE USING (
+    user_id IN (SELECT id FROM public.users WHERE auth_id = auth.uid())
+  );
+
+-- ============================================
 -- TRIGGERS AND FUNCTIONS
 -- ============================================
 
@@ -199,4 +285,16 @@ CREATE TRIGGER plex_connections_updated_at
 DROP TRIGGER IF EXISTS iptv_connections_updated_at ON public.iptv_connections;
 CREATE TRIGGER iptv_connections_updated_at
   BEFORE UPDATE ON public.iptv_connections
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+
+-- Trigger for jellyfin_connections table
+DROP TRIGGER IF EXISTS jellyfin_connections_updated_at ON public.jellyfin_connections;
+CREATE TRIGGER jellyfin_connections_updated_at
+  BEFORE UPDATE ON public.jellyfin_connections
+  FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();
+
+-- Trigger for emby_connections table
+DROP TRIGGER IF EXISTS emby_connections_updated_at ON public.emby_connections;
+CREATE TRIGGER emby_connections_updated_at
+  BEFORE UPDATE ON public.emby_connections
   FOR EACH ROW EXECUTE FUNCTION public.update_updated_at();

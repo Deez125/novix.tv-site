@@ -9,6 +9,8 @@ export default function Account() {
   const [userData, setUserData] = useState(null);
   const [plexConnection, setPlexConnection] = useState(null);
   const [iptvConnection, setIptvConnection] = useState(null);
+  const [jellyfinConnection, setJellyfinConnection] = useState(null);
+  const [embyConnection, setEmbyConnection] = useState(null);
   const [loading, setLoading] = useState(true);
 
   // Plex connection state
@@ -30,6 +32,26 @@ export default function Account() {
     xtream_host: '',
     xtream_username: '',
     xtream_password: '',
+  });
+
+  // Jellyfin connection state
+  const [showJellyfinForm, setShowJellyfinForm] = useState(false);
+  const [jellyfinConnecting, setJellyfinConnecting] = useState(false);
+  const [jellyfinError, setJellyfinError] = useState('');
+  const [jellyfinForm, setJellyfinForm] = useState({
+    server_url: '',
+    username: '',
+    password: '',
+  });
+
+  // Emby connection state
+  const [showEmbyForm, setShowEmbyForm] = useState(false);
+  const [embyConnecting, setEmbyConnecting] = useState(false);
+  const [embyError, setEmbyError] = useState('');
+  const [embyForm, setEmbyForm] = useState({
+    server_url: '',
+    username: '',
+    password: '',
   });
 
   // Fetch user data and connections from Supabase on mount
@@ -78,6 +100,32 @@ export default function Account() {
           console.error('Error fetching IPTV connection:', iptvFetchError);
         } else {
           setIptvConnection(iptvData);
+        }
+
+        // Fetch Jellyfin connection using the user's id
+        const { data: jellyfinData, error: jellyfinFetchError } = await supabase
+          .from('jellyfin_connections')
+          .select('*')
+          .eq('user_id', userDataResult.id)
+          .single();
+
+        if (jellyfinFetchError && jellyfinFetchError.code !== 'PGRST116') {
+          console.error('Error fetching Jellyfin connection:', jellyfinFetchError);
+        } else {
+          setJellyfinConnection(jellyfinData);
+        }
+
+        // Fetch Emby connection using the user's id
+        const { data: embyData, error: embyFetchError } = await supabase
+          .from('emby_connections')
+          .select('*')
+          .eq('user_id', userDataResult.id)
+          .single();
+
+        if (embyFetchError && embyFetchError.code !== 'PGRST116') {
+          console.error('Error fetching Emby connection:', embyFetchError);
+        } else {
+          setEmbyConnection(embyData);
         }
       }
     } catch (err) {
@@ -376,6 +424,258 @@ export default function Account() {
     }
   };
 
+  // Connect Jellyfin - test connection and save
+  const connectJellyfin = async (e) => {
+    e.preventDefault();
+    setJellyfinError('');
+    setJellyfinConnecting(true);
+
+    const { server_url, username, password } = jellyfinForm;
+
+    // Validate required fields
+    if (!server_url.trim() || !username.trim()) {
+      setJellyfinError('Server URL and username are required');
+      setJellyfinConnecting(false);
+      return;
+    }
+
+    // Normalize server URL (remove trailing slash)
+    const normalizedUrl = server_url.trim().replace(/\/$/, '');
+
+    try {
+      // Test connection by authenticating with Jellyfin
+      const response = await fetch(`${normalizedUrl}/Users/AuthenticateByName`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Emby-Authorization': `MediaBrowser Client="NovixTV", Device="Web", DeviceId="novix-web-${Date.now()}", Version="1.0.0"`,
+        },
+        body: JSON.stringify({
+          Username: username.trim(),
+          Pw: password,
+        }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Invalid username or password');
+        }
+        throw new Error(`Connection failed (${response.status})`);
+      }
+
+      const authResult = await response.json();
+
+      // Get user's id first
+      const { data: userRecord, error: userError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_id', user.id)
+        .single();
+
+      if (userError) {
+        throw new Error('Failed to get user record');
+      }
+
+      // Get server info for the name
+      let serverName = 'Jellyfin Server';
+      try {
+        const serverInfoResponse = await fetch(`${normalizedUrl}/System/Info/Public`);
+        if (serverInfoResponse.ok) {
+          const serverInfo = await serverInfoResponse.json();
+          serverName = serverInfo.ServerName || 'Jellyfin Server';
+        }
+      } catch {
+        // Ignore error, use default name
+      }
+
+      // Save connection to database
+      const connectionData = {
+        user_id: userRecord.id,
+        server_url: normalizedUrl,
+        server_name: serverName,
+        username: username.trim(),
+        access_token: authResult.AccessToken,
+        user_id_on_server: authResult.User?.Id,
+        connected_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase
+        .from('jellyfin_connections')
+        .upsert(connectionData, { onConflict: 'user_id' });
+
+      if (error) {
+        throw new Error('Failed to save connection');
+      }
+
+      // Reset form and refresh
+      setShowJellyfinForm(false);
+      setJellyfinForm({ server_url: '', username: '', password: '' });
+      await fetchUserData();
+
+    } catch (err) {
+      console.error('Jellyfin connection error:', err);
+      setJellyfinError(err.message || 'Failed to connect to Jellyfin server');
+    } finally {
+      setJellyfinConnecting(false);
+    }
+  };
+
+  // Disconnect Jellyfin
+  const disconnectJellyfin = async () => {
+    try {
+      const { data: userRecord, error: userError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_id', user.id)
+        .single();
+
+      if (userError) {
+        console.error('Error fetching user record:', userError);
+        return;
+      }
+
+      const { error } = await supabase
+        .from('jellyfin_connections')
+        .delete()
+        .eq('user_id', userRecord.id);
+
+      if (error) {
+        console.error('Error disconnecting Jellyfin:', error);
+      } else {
+        setJellyfinConnection(null);
+        setShowJellyfinForm(false);
+      }
+    } catch (err) {
+      console.error('Error:', err);
+    }
+  };
+
+  // Connect Emby - test connection and save
+  const connectEmby = async (e) => {
+    e.preventDefault();
+    setEmbyError('');
+    setEmbyConnecting(true);
+
+    const { server_url, username, password } = embyForm;
+
+    // Validate required fields
+    if (!server_url.trim() || !username.trim()) {
+      setEmbyError('Server URL and username are required');
+      setEmbyConnecting(false);
+      return;
+    }
+
+    // Normalize server URL (remove trailing slash)
+    const normalizedUrl = server_url.trim().replace(/\/$/, '');
+
+    try {
+      // Test connection by authenticating with Emby
+      const response = await fetch(`${normalizedUrl}/Users/AuthenticateByName`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Emby-Authorization': `Emby Client="NovixTV", Device="Web", DeviceId="novix-web-${Date.now()}", Version="1.0.0"`,
+        },
+        body: JSON.stringify({
+          Username: username.trim(),
+          Pw: password,
+        }),
+      });
+
+      if (!response.ok) {
+        if (response.status === 401) {
+          throw new Error('Invalid username or password');
+        }
+        throw new Error(`Connection failed (${response.status})`);
+      }
+
+      const authResult = await response.json();
+
+      // Get user's id first
+      const { data: userRecord, error: userError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_id', user.id)
+        .single();
+
+      if (userError) {
+        throw new Error('Failed to get user record');
+      }
+
+      // Get server info for the name
+      let serverName = 'Emby Server';
+      try {
+        const serverInfoResponse = await fetch(`${normalizedUrl}/System/Info/Public`);
+        if (serverInfoResponse.ok) {
+          const serverInfo = await serverInfoResponse.json();
+          serverName = serverInfo.ServerName || 'Emby Server';
+        }
+      } catch {
+        // Ignore error, use default name
+      }
+
+      // Save connection to database
+      const connectionData = {
+        user_id: userRecord.id,
+        server_url: normalizedUrl,
+        server_name: serverName,
+        username: username.trim(),
+        access_token: authResult.AccessToken,
+        user_id_on_server: authResult.User?.Id,
+        connected_at: new Date().toISOString(),
+      };
+
+      const { error } = await supabase
+        .from('emby_connections')
+        .upsert(connectionData, { onConflict: 'user_id' });
+
+      if (error) {
+        throw new Error('Failed to save connection');
+      }
+
+      // Reset form and refresh
+      setShowEmbyForm(false);
+      setEmbyForm({ server_url: '', username: '', password: '' });
+      await fetchUserData();
+
+    } catch (err) {
+      console.error('Emby connection error:', err);
+      setEmbyError(err.message || 'Failed to connect to Emby server');
+    } finally {
+      setEmbyConnecting(false);
+    }
+  };
+
+  // Disconnect Emby
+  const disconnectEmby = async () => {
+    try {
+      const { data: userRecord, error: userError } = await supabase
+        .from('users')
+        .select('id')
+        .eq('auth_id', user.id)
+        .single();
+
+      if (userError) {
+        console.error('Error fetching user record:', userError);
+        return;
+      }
+
+      const { error } = await supabase
+        .from('emby_connections')
+        .delete()
+        .eq('user_id', userRecord.id);
+
+      if (error) {
+        console.error('Error disconnecting Emby:', error);
+      } else {
+        setEmbyConnection(null);
+        setShowEmbyForm(false);
+      }
+    } catch (err) {
+      console.error('Error:', err);
+    }
+  };
+
   if (!user) {
     return (
       <div className="min-h-screen bg-slate-950 text-white flex items-center justify-center">
@@ -426,7 +726,7 @@ export default function Account() {
                 </span>
               </div>
             )}
-            <div>
+            <div className="flex-1">
               <div className="text-xl font-medium">
                 {user.user_metadata?.full_name || user.user_metadata?.name || user.email}
               </div>
@@ -435,6 +735,12 @@ export default function Account() {
                 Signed in via {user.app_metadata?.provider || 'email'}
               </div>
             </div>
+            <button
+              onClick={handleLogout}
+              className="px-4 py-2 text-sm text-red-400 hover:text-red-300 transition"
+            >
+              Sign Out
+            </button>
           </div>
         </div>
 
@@ -453,11 +759,7 @@ export default function Account() {
                     className="w-10 h-10 rounded-lg"
                   />
                 ) : (
-                  <div className="w-10 h-10 bg-amber-500/20 rounded-lg flex items-center justify-center">
-                    <svg className="w-5 h-5 text-amber-400" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M12 2L2 12h3v8h14v-8h3L12 2zm0 3.5L18 12h-2v6H8v-6H6l6-6.5z"/>
-                    </svg>
-                  </div>
+                  <img src="/icons/plex.svg" alt="Plex" className="w-10 h-10 rounded-lg" />
                 )}
                 <div>
                   <div className="font-medium">Plex</div>
@@ -492,9 +794,9 @@ export default function Account() {
                 <button
                   onClick={connectPlex}
                   disabled={plexConnecting}
-                  className="px-4 py-2 bg-amber-500 hover:bg-amber-400 text-black font-medium rounded-lg transition disabled:opacity-50"
+                  className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white font-medium rounded-lg transition disabled:opacity-50"
                 >
-                  {plexConnecting ? 'Connecting...' : 'Connect Plex'}
+                  {plexConnecting ? 'Connecting...' : 'Connect'}
                 </button>
               )}
             </div>
@@ -512,22 +814,223 @@ export default function Account() {
               </div>
             )}
 
-            {!plexConnected && !plexConnecting && (
-              <p className="mt-3 text-xs text-slate-500">
-                Connect your Plex account to access your libraries through NovixTV
-              </p>
+          </div>
+
+          {/* Jellyfin Connection */}
+          <div className="p-4 bg-slate-900 rounded-lg border border-slate-700 mt-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <img src="/icons/jelllyfin.svg" alt="Jellyfin" className="w-10 h-10 rounded-lg" />
+                <div>
+                  <div className="font-medium">Jellyfin</div>
+                  <div className="text-sm text-slate-400">
+                    {jellyfinConnection
+                      ? `${jellyfinConnection.username} @ ${jellyfinConnection.server_name || 'Server'}`
+                      : 'Not connected'}
+                  </div>
+                </div>
+              </div>
+
+              {jellyfinConnection ? (
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-1 text-xs bg-purple-500/20 text-purple-400 rounded">
+                    Connected
+                  </span>
+                  <button
+                    onClick={disconnectJellyfin}
+                    className="px-3 py-1.5 text-sm text-red-400 hover:text-red-300 transition"
+                  >
+                    Disconnect
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowJellyfinForm(!showJellyfinForm)}
+                  className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white font-medium rounded-lg transition"
+                >
+                  {showJellyfinForm ? 'Cancel' : 'Connect'}
+                </button>
+              )}
+            </div>
+
+            {/* Jellyfin Connection Form */}
+            {showJellyfinForm && !jellyfinConnection && (
+              <form onSubmit={connectJellyfin} className="mt-4 space-y-4">
+                <div>
+                  <label className="block text-sm text-slate-400 mb-1">
+                    Server URL <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="url"
+                    value={jellyfinForm.server_url}
+                    onChange={(e) => setJellyfinForm({ ...jellyfinForm, server_url: e.target.value })}
+                    placeholder="http://your-server:8096"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                  />
+                  <p className="mt-1 text-xs text-slate-500">
+                    The URL of your Jellyfin server (include port if needed)
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm text-slate-400 mb-1">
+                    Username <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={jellyfinForm.username}
+                    onChange={(e) => setJellyfinForm({ ...jellyfinForm, username: e.target.value })}
+                    placeholder="Your Jellyfin username"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-slate-400 mb-1">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    value={jellyfinForm.password}
+                    onChange={(e) => setJellyfinForm({ ...jellyfinForm, password: e.target.value })}
+                    placeholder="Your password (leave empty if none)"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-purple-500"
+                  />
+                </div>
+
+                {jellyfinError && (
+                  <div className="text-sm text-red-400">
+                    {jellyfinError}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={jellyfinConnecting}
+                  className="w-full py-2 bg-purple-500 hover:bg-purple-400 text-white font-medium rounded-lg transition disabled:opacity-50"
+                >
+                  {jellyfinConnecting ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      Testing Connection...
+                    </span>
+                  ) : (
+                    'Test & Connect'
+                  )}
+                </button>
+              </form>
             )}
+
+          </div>
+
+          {/* Emby Connection */}
+          <div className="p-4 bg-slate-900 rounded-lg border border-slate-700 mt-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-3">
+                <img src="/icons/emby.svg" alt="Emby" className="w-10 h-10 rounded-lg" />
+                <div>
+                  <div className="font-medium">Emby</div>
+                  <div className="text-sm text-slate-400">
+                    {embyConnection
+                      ? `${embyConnection.username} @ ${embyConnection.server_name || 'Server'}`
+                      : 'Not connected'}
+                  </div>
+                </div>
+              </div>
+
+              {embyConnection ? (
+                <div className="flex items-center gap-2">
+                  <span className="px-2 py-1 text-xs bg-green-500/20 text-green-400 rounded">
+                    Connected
+                  </span>
+                  <button
+                    onClick={disconnectEmby}
+                    className="px-3 py-1.5 text-sm text-red-400 hover:text-red-300 transition"
+                  >
+                    Disconnect
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => setShowEmbyForm(!showEmbyForm)}
+                  className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white font-medium rounded-lg transition"
+                >
+                  {showEmbyForm ? 'Cancel' : 'Connect'}
+                </button>
+              )}
+            </div>
+
+            {/* Emby Connection Form */}
+            {showEmbyForm && !embyConnection && (
+              <form onSubmit={connectEmby} className="mt-4 space-y-4">
+                <div>
+                  <label className="block text-sm text-slate-400 mb-1">
+                    Server URL <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="url"
+                    value={embyForm.server_url}
+                    onChange={(e) => setEmbyForm({ ...embyForm, server_url: e.target.value })}
+                    placeholder="http://your-server:8096"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-green-500"
+                  />
+                  <p className="mt-1 text-xs text-slate-500">
+                    The URL of your Emby server (include port if needed)
+                  </p>
+                </div>
+                <div>
+                  <label className="block text-sm text-slate-400 mb-1">
+                    Username <span className="text-red-400">*</span>
+                  </label>
+                  <input
+                    type="text"
+                    value={embyForm.username}
+                    onChange={(e) => setEmbyForm({ ...embyForm, username: e.target.value })}
+                    placeholder="Your Emby username"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-green-500"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm text-slate-400 mb-1">
+                    Password
+                  </label>
+                  <input
+                    type="password"
+                    value={embyForm.password}
+                    onChange={(e) => setEmbyForm({ ...embyForm, password: e.target.value })}
+                    placeholder="Your password (leave empty if none)"
+                    className="w-full px-3 py-2 bg-slate-800 border border-slate-700 rounded-lg text-white placeholder-slate-500 focus:outline-none focus:border-green-500"
+                  />
+                </div>
+
+                {embyError && (
+                  <div className="text-sm text-red-400">
+                    {embyError}
+                  </div>
+                )}
+
+                <button
+                  type="submit"
+                  disabled={embyConnecting}
+                  className="w-full py-2 bg-green-500 hover:bg-green-400 text-white font-medium rounded-lg transition disabled:opacity-50"
+                >
+                  {embyConnecting ? (
+                    <span className="flex items-center justify-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                      Testing Connection...
+                    </span>
+                  ) : (
+                    'Test & Connect'
+                  )}
+                </button>
+              </form>
+            )}
+
           </div>
 
           {/* IPTV Connection */}
           <div className="p-4 bg-slate-900 rounded-lg border border-slate-700 mt-4">
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-500/20 rounded-lg flex items-center justify-center">
-                  <svg className="w-5 h-5 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                </div>
+                <img src="/icons/iptv.svg" alt="IPTV" className="w-10 h-10 rounded-lg" />
                 <div>
                   <div className="font-medium">IPTV Provider</div>
                   <div className="text-sm text-slate-400">
@@ -553,9 +1056,9 @@ export default function Account() {
               ) : (
                 <button
                   onClick={() => setShowIptvForm(!showIptvForm)}
-                  className="px-4 py-2 bg-blue-500 hover:bg-blue-400 text-white font-medium rounded-lg transition"
+                  className="px-4 py-2 bg-violet-600 hover:bg-violet-500 text-white font-medium rounded-lg transition"
                 >
-                  {showIptvForm ? 'Cancel' : 'Connect IPTV'}
+                  {showIptvForm ? 'Cancel' : 'Connect'}
                 </button>
               )}
             </div>
@@ -684,15 +1187,10 @@ export default function Account() {
               </form>
             )}
 
-            {!showIptvForm && !iptvConnection && (
-              <p className="mt-3 text-xs text-slate-500">
-                Connect your IPTV provider (M3U/Xtream Codes) for live TV access
-              </p>
-            )}
           </div>
         </div>
 
-        {/* Subscription Section */}
+        {/* Subscription Section - Hidden for now
         <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-6">
           <h2 className="text-lg font-semibold mb-4">Subscription</h2>
           <div className="flex items-center gap-2 mb-3">
@@ -724,23 +1222,7 @@ export default function Account() {
             </button>
           )}
         </div>
-
-        {/* Danger Zone */}
-        <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6">
-          <h2 className="text-lg font-semibold mb-4 text-red-400">Danger Zone</h2>
-          <div className="flex items-center justify-between">
-            <div>
-              <div className="font-medium">Sign Out</div>
-              <div className="text-sm text-slate-400">Sign out of your account on this device</div>
-            </div>
-            <button
-              onClick={handleLogout}
-              className="px-4 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-600/30 rounded-lg transition"
-            >
-              Sign Out
-            </button>
-          </div>
-        </div>
+        */}
       </div>
 
       {/* IPTV Test Modal */}
