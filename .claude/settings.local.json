@@ -12,7 +12,10 @@
       "Bash(git push:*)",
       "Bash(npx wrangler:*)",
       "Bash(npm install:*)",
-      "Bash(npm run dev:*)"
+      "Bash(npm run dev:*)",
+      "Bash(npm ls:*)",
+      "Bash(ren:*)",
+      "Bash(move \"jelllyfin.svg\" \"jellyfin.svg\")"
     ],
     "deny": [],
     "ask": []

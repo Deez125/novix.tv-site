@@ -4,6 +4,8 @@ import { supabase } from '../lib/supabase';
 import IptvTestModal from '../components/IptvTestModal';
 import PlexServerSelectionModal from '../components/PlexServerSelectionModal';
 
+const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8787';
+
 export default function Account() {
   const { user, signOut } = useAuth();
   const [userData, setUserData] = useState(null);
@@ -443,27 +445,24 @@ export default function Account() {
     const normalizedUrl = server_url.trim().replace(/\/$/, '');
 
     try {
-      // Test connection by authenticating with Jellyfin
-      const response = await fetch(`${normalizedUrl}/Users/AuthenticateByName`, {
+      // Use proxy endpoint to avoid CORS issues
+      const response = await fetch(`${API_BASE}/api/jellyfin/auth`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Emby-Authorization': `MediaBrowser Client="NovixTV", Device="Web", DeviceId="novix-web-${Date.now()}", Version="1.0.0"`,
         },
         body: JSON.stringify({
-          Username: username.trim(),
-          Pw: password,
+          server_url: normalizedUrl,
+          username: username.trim(),
+          password: password || '',
         }),
       });
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('Invalid username or password');
-        }
-        throw new Error(`Connection failed (${response.status})`);
-      }
+      const result = await response.json();
 
-      const authResult = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || 'Connection failed');
+      }
 
       // Get user's id first
       const { data: userRecord, error: userError } = await supabase
@@ -476,26 +475,14 @@ export default function Account() {
         throw new Error('Failed to get user record');
       }
 
-      // Get server info for the name
-      let serverName = 'Jellyfin Server';
-      try {
-        const serverInfoResponse = await fetch(`${normalizedUrl}/System/Info/Public`);
-        if (serverInfoResponse.ok) {
-          const serverInfo = await serverInfoResponse.json();
-          serverName = serverInfo.ServerName || 'Jellyfin Server';
-        }
-      } catch {
-        // Ignore error, use default name
-      }
-
       // Save connection to database
       const connectionData = {
         user_id: userRecord.id,
         server_url: normalizedUrl,
-        server_name: serverName,
+        server_name: result.serverName,
         username: username.trim(),
-        access_token: authResult.AccessToken,
-        user_id_on_server: authResult.User?.Id,
+        access_token: result.accessToken,
+        user_id_on_server: result.userId,
         connected_at: new Date().toISOString(),
       };
 
@@ -569,27 +556,24 @@ export default function Account() {
     const normalizedUrl = server_url.trim().replace(/\/$/, '');
 
     try {
-      // Test connection by authenticating with Emby
-      const response = await fetch(`${normalizedUrl}/Users/AuthenticateByName`, {
+      // Use proxy endpoint to avoid CORS issues
+      const response = await fetch(`${API_BASE}/api/emby/auth`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'X-Emby-Authorization': `Emby Client="NovixTV", Device="Web", DeviceId="novix-web-${Date.now()}", Version="1.0.0"`,
         },
         body: JSON.stringify({
-          Username: username.trim(),
-          Pw: password,
+          server_url: normalizedUrl,
+          username: username.trim(),
+          password: password || '',
         }),
       });
 
-      if (!response.ok) {
-        if (response.status === 401) {
-          throw new Error('Invalid username or password');
-        }
-        throw new Error(`Connection failed (${response.status})`);
-      }
+      const result = await response.json();
 
-      const authResult = await response.json();
+      if (!response.ok) {
+        throw new Error(result.error || 'Connection failed');
+      }
 
       // Get user's id first
       const { data: userRecord, error: userError } = await supabase
@@ -602,26 +586,14 @@ export default function Account() {
         throw new Error('Failed to get user record');
       }
 
-      // Get server info for the name
-      let serverName = 'Emby Server';
-      try {
-        const serverInfoResponse = await fetch(`${normalizedUrl}/System/Info/Public`);
-        if (serverInfoResponse.ok) {
-          const serverInfo = await serverInfoResponse.json();
-          serverName = serverInfo.ServerName || 'Emby Server';
-        }
-      } catch {
-        // Ignore error, use default name
-      }
-
       // Save connection to database
       const connectionData = {
         user_id: userRecord.id,
         server_url: normalizedUrl,
-        server_name: serverName,
+        server_name: result.serverName,
         username: username.trim(),
-        access_token: authResult.AccessToken,
-        user_id_on_server: authResult.User?.Id,
+        access_token: result.accessToken,
+        user_id_on_server: result.userId,
         connected_at: new Date().toISOString(),
       };
 

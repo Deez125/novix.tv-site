@@ -1985,6 +1985,130 @@ async function handleGetPlexContinueWatching(request, env) {
   }
 }
 
+// ============================================
+// JELLYFIN PROXY ENDPOINTS
+// ============================================
+
+// Proxy Jellyfin authentication to avoid CORS issues
+async function handleJellyfinAuth(request) {
+  try {
+    const { server_url, username, password } = await request.json();
+
+    if (!server_url || !username) {
+      return errorResponse('Server URL and username are required', 400);
+    }
+
+    // Normalize server URL
+    const normalizedUrl = server_url.trim().replace(/\/$/, '');
+
+    // Authenticate with Jellyfin
+    const response = await fetch(`${normalizedUrl}/Users/AuthenticateByName`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Emby-Authorization': `MediaBrowser Client="NovixTV", Device="Web", DeviceId="novix-web-${Date.now()}", Version="1.0.0"`,
+      },
+      body: JSON.stringify({
+        Username: username.trim(),
+        Pw: password || '',
+      }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        return errorResponse('Invalid username or password', 401);
+      }
+      return errorResponse(`Connection failed (${response.status})`, response.status);
+    }
+
+    const authResult = await response.json();
+
+    // Get server info for the name
+    let serverName = 'Jellyfin Server';
+    try {
+      const serverInfoResponse = await fetch(`${normalizedUrl}/System/Info/Public`);
+      if (serverInfoResponse.ok) {
+        const serverInfo = await serverInfoResponse.json();
+        serverName = serverInfo.ServerName || 'Jellyfin Server';
+      }
+    } catch {
+      // Ignore error, use default name
+    }
+
+    return jsonResponse({
+      success: true,
+      accessToken: authResult.AccessToken,
+      userId: authResult.User?.Id,
+      serverName,
+    });
+  } catch (err) {
+    console.error('Jellyfin auth error:', err);
+    return errorResponse(err.message || 'Failed to connect to Jellyfin server', 500);
+  }
+}
+
+// ============================================
+// EMBY PROXY ENDPOINTS
+// ============================================
+
+// Proxy Emby authentication to avoid CORS issues
+async function handleEmbyAuth(request) {
+  try {
+    const { server_url, username, password } = await request.json();
+
+    if (!server_url || !username) {
+      return errorResponse('Server URL and username are required', 400);
+    }
+
+    // Normalize server URL
+    const normalizedUrl = server_url.trim().replace(/\/$/, '');
+
+    // Authenticate with Emby
+    const response = await fetch(`${normalizedUrl}/Users/AuthenticateByName`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Emby-Authorization': `Emby Client="NovixTV", Device="Web", DeviceId="novix-web-${Date.now()}", Version="1.0.0"`,
+      },
+      body: JSON.stringify({
+        Username: username.trim(),
+        Pw: password || '',
+      }),
+    });
+
+    if (!response.ok) {
+      if (response.status === 401) {
+        return errorResponse('Invalid username or password', 401);
+      }
+      return errorResponse(`Connection failed (${response.status})`, response.status);
+    }
+
+    const authResult = await response.json();
+
+    // Get server info for the name
+    let serverName = 'Emby Server';
+    try {
+      const serverInfoResponse = await fetch(`${normalizedUrl}/System/Info/Public`);
+      if (serverInfoResponse.ok) {
+        const serverInfo = await serverInfoResponse.json();
+        serverName = serverInfo.ServerName || 'Emby Server';
+      }
+    } catch {
+      // Ignore error, use default name
+    }
+
+    return jsonResponse({
+      success: true,
+      accessToken: authResult.AccessToken,
+      userId: authResult.User?.Id,
+      serverName,
+    });
+  } catch (err) {
+    console.error('Emby auth error:', err);
+    return errorResponse(err.message || 'Failed to connect to Emby server', 500);
+  }
+}
+
 // Main router
 export default {
   async fetch(request, env, ctx) {
@@ -2061,6 +2185,14 @@ export default {
       }
       if (path === '/api/subscription/cancel' && method === 'POST') {
         return handleCancelSubscription(request, env);
+      }
+
+      // Jellyfin/Emby proxy auth (public - proxies to avoid CORS)
+      if (path === '/api/jellyfin/auth' && method === 'POST') {
+        return handleJellyfinAuth(request);
+      }
+      if (path === '/api/emby/auth' && method === 'POST') {
+        return handleEmbyAuth(request);
       }
 
       // === PLEX LIBRARY ROUTES (user auth via Supabase token) ===
