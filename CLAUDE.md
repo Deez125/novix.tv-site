@@ -4,155 +4,132 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-NovixTV - a subscription management system for a hosted Plex server. Users subscribe via Stripe, and when they cancel (or payment fails), they are automatically removed from the Plex server.
+NovixTV web — companion site + admin dashboard for the Novix Android TV app. Three concurrent surfaces:
 
-**GitHub:** https://github.com/Deez125/PandaTV-Site
+1. **Customer site** (Home/Signup/Login/Account) — Supabase-Auth users link Plex / Jellyfin / Emby / IPTV connections to their account.
+2. **TV-app pairing + content backend** — `/link` page completes a device-code flow from the TV app; per-user Plex proxy endpoints feed the TV app's home screen.
+3. **Operator admin dashboard** (`/admin`) — manage paying Plex subscribers, generate Stripe checkouts, manually kick users.
+
+Naming is inconsistent across the repo (`panda-worker` in [worker/wrangler.toml](worker/wrangler.toml), `novixtv-frontend` in [frontend/package.json](frontend/package.json), "CineVault Manager" in [README.md](README.md), Pages project named `novix-tv` in one doc and `cinevault-manager` in another). Treat the product as **NovixTV** unless touching deploy config — then verify the actual deployed name.
 
 ## Tech Stack
 
-- **Frontend:** React + Vite + Tailwind CSS (deployed to Cloudflare Pages)
-- **Backend:** Cloudflare Worker (API + Stripe webhooks + Plex API)
-- **Database:** Supabase (PostgreSQL via REST API)
-- **Payments:** Stripe subscriptions
-- **Plex:** plex.tv REST API (not direct server access)
-- **Monitoring:** Tautulli (optional, for user cleanup)
-
-## Project Structure
-
-```
-worker/              # Cloudflare Worker backend
-  src/index.js       # Main entry point (all routes + business logic)
-  wrangler.toml      # Worker config (uses [vars] for local dev)
-frontend/            # React admin dashboard
-  src/
-    lib/api.js       # API client with bearer auth
-    components/      # UserTable, AddUserModal, ActivityLog, StatusBadge, DashboardStats
-    pages/           # Dashboard, Settings
-```
+- **Frontend** ([frontend/](frontend/)): React 18 + Vite + Tailwind, Cloudflare Pages. Dev server on port 6969.
+- **Worker** ([worker/](worker/)): single Cloudflare Worker, monolithic [worker/src/index.js](worker/src/index.js) (~2.3k lines — all handlers, helpers, and the route table live in one file).
+- **Database**: Supabase Postgres. Worker uses raw PostgREST (no SDK); frontend uses `@supabase/supabase-js` for auth + RLS-protected reads.
+- **Payments**: Stripe (operator subscription side only — see "Two parallel models").
 
 ## Development Commands
 
-### Worker (Backend)
 ```bash
-cd worker
-npm install
-wrangler dev                    # Local development (uses wrangler.toml [vars])
-wrangler deploy                 # Deploy to production
-wrangler secret put SECRET_NAME # Set production secrets
+# Worker
+cd worker && wrangler dev                    # http://localhost:8787 (uses [vars] in wrangler.toml + .dev.vars for secrets)
+cd worker && wrangler deploy
+cd worker && wrangler secret put SECRET_NAME
+
+# Frontend
+cd frontend && npm run dev                   # http://localhost:6969
+cd frontend && npm run build
+cd frontend && wrangler pages deploy dist --project-name <pages-project-name>
+
+# Stripe webhook testing
+stripe listen --forward-to localhost:8787/api/webhook/stripe
 ```
 
-### Frontend
-```bash
-cd frontend
-npm install
-npm run dev                     # Local dev server (http://localhost:6969)
-npm run build                   # Production build
-wrangler pages deploy dist --project-name novix-tv
-```
+No tests, no linter config — manual testing only.
 
-## Architecture
+## Architecture: Two parallel user models live in this repo
 
-### API Routes
+This is the most important thing to understand before editing the worker. There are **two unrelated user models** that both exist in the codebase:
 
-**Public routes (no auth):**
-- `POST /api/plex/auth/start` - Start Plex PIN auth flow
-- `GET /api/plex/auth/check` - Check if PIN was claimed
-- `POST /api/signup` - Customer self-signup with Plex account
-- `GET /api/user/subscription` - Get subscription status by plex_user_id
-- `GET /api/checkout/success` - Handle successful checkout, invite to Plex
-- `POST /api/subscription/change` - Change tier (upgrade/downgrade)
-- `POST /api/subscription/cancel` - Cancel subscription
-- `POST /api/webhook/stripe` - Stripe webhook (verified via signature)
-- `GET /api/health`, `GET /api/stats` - Public status endpoints
+### Model A — Supabase-Auth users (customer site + TV app)
 
-**Admin routes (require `Authorization: Bearer {ADMIN_API_KEY}`):**
-- `GET/POST /api/users` - List/create users
-- `PUT/DELETE /api/users/:id` - Update/delete user
-- `POST /api/users/:id/checkout` - Generate Stripe checkout URL
-- `POST /api/users/:id/kick` - Manually remove from Plex
-- `GET /api/activity` - Activity log
-- `GET /api/plex/friends`, `GET /api/plex/libraries` - Plex server info
+- `users` table is keyed to `auth.users` via `auth_id`. Created automatically by the `handle_new_user` trigger on signup ([supabase-schema.sql:222](supabase-schema.sql#L222)).
+- Connection tables (`plex_connections`, `jellyfin_connections`, `emby_connections`, `iptv_connections`) hold per-user credentials/tokens. RLS scoped to `auth.uid()`.
+- `subscription_tier` is just `'free' | 'basic'` (CHECK constraint).
+- Frontend auth in [frontend/src/lib/auth.jsx](frontend/src/lib/auth.jsx) (`AuthProvider`).
+- Worker authenticates these users by validating their Supabase JWT (`getAuthenticatedUser` helper) on `/api/plex/featured`, `/recently-added`, `/continue-watching`, and `/api/device/activate`.
+- The Plex proxy endpoints hit **the user's own Plex server** (`plex_connections.plex_server_url` + `plex_token`), not the operator's.
 
-### Tiered Library Access
+### Model B — Stripe-billed Plex subscribers (`/admin` dashboard, legacy)
 
-Users have different Plex library access based on tier:
-- `hd` - Standard HD libraries (configured via `LIBRARY_IDS_HD`)
-- `4k` - 4K + HD libraries (configured via `LIBRARY_IDS_4K`)
-- `admin` - All libraries (configured via `LIBRARY_IDS_ADMIN`)
+- Assumes a `users` table with `stripe_customer_id`, `plex_user_id`, `subscription_status` (`pending`/`active`/`past_due`/`cancelled`/`kicked`), and a separate `activity_log` table.
+- **None of those columns or that table exist in the current [supabase-schema.sql](supabase-schema.sql).** The admin routes will fail unless that schema is restored. Treat this as an unmigrated legacy surface — verify the live DB before working on admin endpoints.
+- Auto-kick flow: Stripe webhook `customer.subscription.deleted` → operator's `PLEX_TOKEN` removes the user's library access, then their shared-server entry, then the friend relationship; optionally deletes from Tautulli; logs to `activity_log`.
+- Tier-based library access via `LIBRARY_IDS_HD` / `LIBRARY_IDS_4K` / `LIBRARY_IDS_ADMIN` env vars (JSON arrays of local Plex library keys; Worker converts to plex.tv section IDs). These tier names (`hd`/`4k`/`admin`) are **independent** of Model A's `'free' | 'basic'`.
+- Admin-route auth: `Authorization: Bearer {ADMIN_API_KEY}` (`requireAuth` helper).
 
-Library IDs are local Plex keys (e.g., 1, 3, 4). The worker converts these to plex.tv section IDs when making API calls.
+When adding features, identify which model you're in. Customer-facing site or TV app → Model A. Admin dashboard or Stripe webhook → Model B.
 
-### Core Flow (Auto-Kick)
-1. User cancels in Stripe → `customer.subscription.deleted` webhook fires
-2. Worker looks up user by `stripe_customer_id` in Supabase
-3. Worker sets `subscription_status = 'cancelled'`
-4. Worker removes library access, then shared server, then friend relationship
-5. Worker removes user from Tautulli (if configured)
-6. Activity logged
+## TV App Device Pairing Flow
 
-### Stripe Webhook Events
-- `checkout.session.completed` - Activate subscription, set tier from price
-- `customer.subscription.created/updated` - Sync status and period end
-- `customer.subscription.deleted` - Cancel + remove from Plex
-- `invoice.payment_failed` - Set to past_due (no auto-kick)
+1. TV app calls `POST /api/device/code` → worker generates a short code, stores in `device_auth_codes`.
+2. TV app polls `GET /api/device/poll?code=...`.
+3. User opens `/link` on the website (logged in via Supabase Auth), enters the code, frontend calls `POST /api/device/activate`.
+4. Worker marks the row `activated=true` and attaches `user_id` + a generated `auth_token` (UUID).
+5. Next poll returns the auth_token; TV app stores it and uses it for subsequent calls.
 
-### Plex API
-All calls go to `https://plex.tv` with headers:
-```
-X-Plex-Token: {PLEX_TOKEN}
-X-Plex-Client-Identifier: novix-tv
-Accept: application/json
-```
+## Worker Route Map
 
-Key operations:
-- Invite: `POST /api/servers/{machineId}/shared_servers`
-- Update libraries: `PUT /api/servers/{machineId}/shared_servers/{shareId}`
-- Remove: Delete shared server + friend relationship
+Routing is a flat if/else chain at [worker/src/index.js:2113](worker/src/index.js#L2113). Three auth tiers, checked in order:
 
-### Supabase
-Use raw REST API (no SDK in Workers):
-- Base: `{SUPABASE_URL}/rest/v1/{table}`
-- Headers: `apikey`, `Authorization: Bearer {SERVICE_KEY}`
-- Use PostgREST query syntax (e.g., `?stripe_customer_id=eq.cus_xxx`)
+**Public** (no auth):
+- `/api/health`, `/api/stats`
+- `/api/webhook/stripe` (signature-verified inside handler)
+- `/api/plex/auth/{start,check}`, `/api/plex/servers`, `/api/plex/save-server`
+- `/api/device/{code,poll,activate}`
+- `/api/signup`, `/api/user/subscription`, `/api/checkout/success`, `/api/subscription/{change,cancel}`
+- `/api/jellyfin/auth`, `/api/emby/auth` — proxy auth to work around browser CORS against self-hosted servers
 
-### Subscription Statuses
-- `pending` - User created, awaiting checkout
-- `active` - Paying subscriber
-- `past_due` - Payment failed (manual kick decision)
-- `cancelled` - Subscription ended (auto-kicked from Plex)
-- `kicked` - Manually removed by admin
+**Supabase JWT required** (Model A — checked inside each handler via `getAuthenticatedUser`):
+- `/api/plex/{featured,recently-added,continue-watching}`
+
+**Admin bearer required** (Model B — gate at [worker/src/index.js:2210](worker/src/index.js#L2210)):
+- `/api/users` (CRUD), `/api/users/:id/{checkout,kick}`
+- `/api/activity`, `/api/plex/{friends,libraries}`
+
+CORS is wide open (`Access-Control-Allow-Origin: *`).
+
+## Supabase Conventions
+
+- Worker calls Supabase via PostgREST: `${SUPABASE_URL}/rest/v1/<table>?<filter>` with `apikey` + `Authorization: Bearer SERVICE_KEY`. Filters use PostgREST syntax (`?id=eq.${id}`).
+- For single-row reads, pass `single: true` to the `supabase()` helper — it sets `Accept: application/vnd.pgrst.object+json` so PostgREST returns an object, not an array.
+- All tables have RLS enabled; Worker bypasses with the service key, frontend reads honor RLS via the anon key.
+- Schema changes go in [supabase-schema.sql](supabase-schema.sql) (full reset — drops tables) or as additive migration files like [add-plex-server-columns.sql](add-plex-server-columns.sql).
+
+## Plex API Notes
+
+Two distinct Plex API surfaces are used:
+
+- **plex.tv** (operator-managed sharing) — `https://plex.tv` with `X-Plex-Token: PLEX_TOKEN` (operator's token), client identifier `novix-tv`. Used by Model B for invite/share/kick.
+  - Invite: `POST /api/servers/{machineId}/shared_servers`
+  - Update libraries: `PUT /api/servers/{machineId}/shared_servers/{shareId}`
+  - Remove: delete shared server + friend relationship
+- **User's own Plex Media Server** (Model A) — direct fetch to `plex_connections.plex_server_url` with that user's `plex_token`. Used by the TV-app proxy endpoints to fetch library content.
+
+Episode handling in the proxy endpoints is non-obvious: use `grandparentTitle` + `grandparentArt` + `grandparentThumb` instead of episode-level fields, and fall back to fetching the show's metadata for genres/logos. Canonical pattern at [worker/src/index.js:1734](worker/src/index.js#L1734) (`handleGetPlexFeatured`).
 
 ## Environment Variables
 
-### Worker Variables
-For local dev, set in `wrangler.toml` under `[vars]`. For production, use `wrangler secret put`:
+**Worker** — set in `wrangler.toml [vars]` for dev, `wrangler secret put` for prod:
 
-**Stripe:**
-- `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`
-- `STRIPE_DEFAULT_PRICE_ID`, `STRIPE_PRICE_HD`, `STRIPE_PRICE_4K`
+- Stripe (Model B): `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, `STRIPE_DEFAULT_PRICE_ID`, `STRIPE_PRICE_HD`, `STRIPE_PRICE_4K`
+- Supabase: `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_KEY`
+- Plex (Model B operator side): `PLEX_TOKEN`, `PLEX_SERVER_URL`, `PLEX_MACHINE_ID`, `LIBRARY_IDS_HD`, `LIBRARY_IDS_4K`, `LIBRARY_IDS_ADMIN`
+- App: `ADMIN_API_KEY`, `FRONTEND_URL`
+- Tautulli (optional, Model B cleanup): `TAUTULLI_URL`, `TAUTULLI_API_KEY`
 
-**Supabase:**
-- `SUPABASE_URL`, `SUPABASE_ANON_KEY`, `SUPABASE_SERVICE_KEY`
+**Frontend** ([frontend/.env](frontend/.env)):
+- `VITE_API_URL` (worker URL, defaults to `http://localhost:8787`)
+- `VITE_API_KEY` (admin bearer for the admin dashboard)
+- Supabase URL/anon key (in [frontend/src/lib/supabase.js](frontend/src/lib/supabase.js))
 
-**Plex:**
-- `PLEX_TOKEN`, `PLEX_SERVER_URL`, `PLEX_MACHINE_ID`
-- `LIBRARY_IDS_HD`, `LIBRARY_IDS_4K`, `LIBRARY_IDS_ADMIN` (JSON arrays of library keys)
+## Known Issues
 
-**App:**
-- `ADMIN_API_KEY`, `FRONTEND_URL`
+See [TODO.md](TODO.md). Notably:
+- Tautulli `delete_user` returns 403 from the Worker (works from curl) — likely a network path issue from Cloudflare edge to the Tautulli host.
+- Plex invite logs a harmless XML-parse error and an "already sharing" error when the success page is hit twice.
 
-**Tautulli (optional):**
-- `TAUTULLI_URL`, `TAUTULLI_API_KEY`
+## Design
 
-### Frontend (via `.env`)
-- `VITE_API_URL` - Worker URL (default: http://localhost:8787)
-- `VITE_API_KEY` - Admin bearer token
-
-## Design Guidelines
-
-Dark theme dashboard with:
-- Background: #0f172a (dark slate)
-- Active: emerald green
-- Warnings/past_due: amber
-- Cancelled/kicked: red
-- Monospace font for data, sans-serif for headings
+Dark theme. Background `#0f172a` (slate-950). Accents: violet for headings, emerald for active subscribers, amber for `past_due`, red for `cancelled`/`kicked`. Monospace for data tables, sans-serif elsewhere.

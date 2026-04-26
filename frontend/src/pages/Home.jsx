@@ -9,59 +9,36 @@ import { SiRoku } from 'react-icons/si';
 import { MdDevices } from 'react-icons/md';
 import { LuLibraryBig } from 'react-icons/lu';
 
-const API_BASE = import.meta.env.VITE_API_URL || 'http://localhost:8787';
-
-// Icons
-const TvIcon = () => (
-  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-  </svg>
+const Wordmark = ({ className = '' }) => (
+  <span className={`wordmark ${className}`}>
+    novix<span className="wordmark-dot">.</span>tv
+  </span>
 );
 
-const PhoneIcon = () => (
-  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-  </svg>
-);
-
-const GlobeIcon = () => (
-  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 01-9 9m9-9a9 9 0 00-9-9m9 9H3m9 9a9 9 0 01-9-9m9 9c1.657 0 3-4.03 3-9s-1.343-9-3-9m0 18c-1.657 0-3-4.03-3-9s1.343-9 3-9m-9 9a9 9 0 019-9" />
-  </svg>
-);
-
-const PlayIcon = () => (
-  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z" />
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+const ChevronDownIcon = ({ className = '' }) => (
+  <svg className={`w-4 h-4 ${className}`} fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
   </svg>
 );
 
 const CheckIcon = () => (
-  <svg className="w-5 h-5 text-violet-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2.5} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
   </svg>
 );
 
-const ChevronDownIcon = () => (
-  <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+const ArrowRight = () => (
+  <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
   </svg>
 );
 
-const LinkIcon = () => (
-  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13.828 10.172a4 4 0 00-5.656 0l-4 4a4 4 0 105.656 5.656l1.102-1.101m-.758-4.899a4 4 0 005.656 0l4-4a4 4 0 00-5.656-5.656l-1.1 1.1" />
+const ZapIcon = ({ className = '' }) => (
+  <svg className={`w-5 h-5 ${className}`} fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
+    <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
   </svg>
 );
 
-const ZapIcon = () => (
-  <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-  </svg>
-);
-
-// FAQ Data
 const faqItems = [
   {
     question: "What is NovixTV?",
@@ -77,11 +54,11 @@ const faqItems = [
   },
   {
     question: "Can I use my own IPTV provider?",
-    answer: "Yes! NovixTV supports M3U playlists and Xtream Codes. Simply add your IPTV credentials in the app settings and your live TV channels will be integrated seamlessly."
+    answer: "Yes. NovixTV supports M3U playlists and Xtream Codes. Add your IPTV credentials in the app settings and your live TV channels will be integrated seamlessly."
   },
   {
     question: "Can I cancel anytime?",
-    answer: "Absolutely! There are no contracts or commitments. Cancel your subscription at any time from your account settings, and you won't be charged again."
+    answer: "Yes. There are no contracts or commitments. Cancel your subscription at any time from your account settings, and you won't be charged again."
   },
   {
     question: "Is there a free trial?",
@@ -89,53 +66,67 @@ const faqItems = [
   }
 ];
 
-// FAQ Item Component
+const platforms = [
+  { icon: IoTvOutline, label: 'Smart TV' },
+  { icon: IoPhonePortraitOutline, label: 'iOS & Android' },
+  { icon: BsGlobe, label: 'Web Browser' },
+  { icon: FaApple, label: 'Apple TV' },
+  { icon: FaGoogle, label: 'Google TV' },
+  { icon: SiRoku, label: 'Roku' },
+  { icon: FaAmazon, label: 'Fire TV' },
+];
+
+const features = [
+  {
+    icon: LuLibraryBig,
+    title: 'Connect Libraries',
+    body: 'Link your Plex, Jellyfin, or Emby libraries and access all your media in one place.',
+  },
+  {
+    icon: IoTvOutline,
+    title: 'Live TV',
+    body: 'Add your IPTV provider and watch live channels seamlessly.',
+  },
+  {
+    icon: ZapIcon,
+    title: 'Fast & Smooth',
+    body: 'Optimized for performance with instant playback and smooth navigation.',
+  },
+  {
+    icon: MdDevices,
+    title: 'Any Device',
+    body: 'Watch on TV, phone, tablet, or browser. Your content follows you.',
+  },
+];
+
+const plans = [
+  { id: 'monthly', name: 'Monthly', price: 9.99, period: 'month', popular: false },
+  { id: 'yearly',  name: 'Yearly',  price: 79.99, period: 'year',  popular: true, savings: 'Save 33%' },
+];
+
 function FAQItem({ question, answer, isOpen, onClick }) {
   return (
-    <div className="border-b border-slate-700/50 last:border-0">
+    <div className="border-b hairline last:border-0">
       <button
         onClick={onClick}
-        className="w-full px-6 py-5 flex items-center justify-between text-left hover:text-violet-400 transition"
+        className="w-full py-5 flex items-center justify-between text-left group"
       >
-        <span className="font-medium pr-4">{question}</span>
-        <span className={`transform transition-transform duration-200 text-slate-400 ${isOpen ? 'rotate-180' : ''}`}>
-          <ChevronDownIcon />
-        </span>
+        <span className="font-medium text-base group-hover:text-violet-300 transition-colors">{question}</span>
+        <ChevronDownIcon className={`chev text-dim ${isOpen ? 'open' : ''}`} />
       </button>
-      <div className={`overflow-hidden transition-all duration-300 ease-in-out ${isOpen ? 'max-h-48 pb-5' : 'max-h-0'}`}>
-        <p className="text-slate-400 text-sm leading-relaxed px-6">{answer}</p>
+      <div className={`overflow-hidden transition-all duration-300 ease-out ${isOpen ? 'max-h-48 pb-5' : 'max-h-0'}`}>
+        <p className="text-muted text-sm leading-relaxed max-w-2xl">{answer}</p>
       </div>
     </div>
   );
 }
 
-// Subscription plans
-const plans = [
-  {
-    id: 'monthly',
-    name: 'Monthly',
-    price: 9.99,
-    period: 'month',
-    popular: false,
-  },
-  {
-    id: 'yearly',
-    name: 'Yearly',
-    price: 79.99,
-    period: 'year',
-    popular: true,
-    savings: 'Save 33%',
-  },
-];
-
-
 export default function Home() {
-  const { user, signOut, loading } = useAuth();
+  const { user, signOut } = useAuth();
   const [showProfileMenu, setShowProfileMenu] = useState(false);
   const [openFaqIndex, setOpenFaqIndex] = useState(null);
   const profileMenuRef = useRef(null);
 
-  // Close profile menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (e) => {
       if (profileMenuRef.current && !profileMenuRef.current.contains(e.target)) {
@@ -146,25 +137,8 @@ export default function Home() {
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleLoginClick = () => {
-    window.history.pushState({}, '', '/login');
-    window.dispatchEvent(new PopStateEvent('popstate'));
-  };
-
-  const handleSignupClick = () => {
-    window.history.pushState({}, '', '/signup');
-    window.dispatchEvent(new PopStateEvent('popstate'));
-  };
-
-  const goToAccount = () => {
-    setShowProfileMenu(false);
-    window.history.pushState({}, '', '/account');
-    window.dispatchEvent(new PopStateEvent('popstate'));
-  };
-
-  const goToLink = () => {
-    setShowProfileMenu(false);
-    window.history.pushState({}, '', '/link');
+  const navigate = (path) => {
+    window.history.pushState({}, '', path);
     window.dispatchEvent(new PopStateEvent('popstate'));
   };
 
@@ -174,23 +148,25 @@ export default function Home() {
   };
 
   const handleSelectPlan = (plan) => {
-    if (user) {
-      // Go to checkout/subscription page
-      window.history.pushState({}, '', `/checkout?plan=${plan.id}`);
-      window.dispatchEvent(new PopStateEvent('popstate'));
-    } else {
-      // Go to signup with plan selected
-      window.history.pushState({}, '', `/signup?plan=${plan.id}`);
-      window.dispatchEvent(new PopStateEvent('popstate'));
-    }
+    if (user) navigate(`/checkout?plan=${plan.id}`);
+    else navigate(`/signup?plan=${plan.id}`);
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-white">
-      {/* Navigation */}
-      <nav className="border-b border-slate-800/50">
-        <div className="max-w-6xl mx-auto px-4 py-4 flex items-center justify-between">
-          <img src="/logo2.svg" alt="NovixTV" className="h-8" />
+    <div className="min-h-screen text-white" style={{ background: 'var(--bg)' }}>
+      {/* ─────────── Navigation ─────────── */}
+      <nav className="sticky top-0 z-40 backdrop-blur-xl" style={{ background: 'rgba(7,7,13,0.7)' }}>
+        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
+          <button onClick={() => navigate('/')} className="flex items-center">
+            <Wordmark />
+          </button>
+
+          <div className="hidden md:flex items-center gap-8">
+            <a href="#features" className="nav-link text-sm">Features</a>
+            <a href="#pricing" className="nav-link text-sm">Pricing</a>
+            <a href="#faq" className="nav-link text-sm">FAQ</a>
+          </div>
+
           {user ? (
             <div className="relative" ref={profileMenuRef}>
               <button
@@ -200,294 +176,228 @@ export default function Home() {
                 {user.user_metadata?.avatar_url || user.user_metadata?.picture ? (
                   <img
                     src={user.user_metadata?.avatar_url || user.user_metadata?.picture}
-                    alt={user.user_metadata?.full_name || user.user_metadata?.name || user.email}
-                    className="w-9 h-9 rounded-full border-2 border-slate-700"
+                    alt=""
+                    className="w-8 h-8 rounded-full"
                   />
                 ) : (
-                  <div className="w-9 h-9 bg-violet-500/20 rounded-full flex items-center justify-center border-2 border-slate-700">
-                    <span className="text-violet-400 font-semibold">
-                      {(user.user_metadata?.full_name || user.user_metadata?.name || user.email || 'U').charAt(0).toUpperCase()}
-                    </span>
+                  <div className="w-8 h-8 rounded-full flex items-center justify-center text-sm font-semibold"
+                    style={{ background: 'rgba(167,139,250,0.15)', color: 'var(--accent-bright)' }}>
+                    {(user.user_metadata?.full_name || user.email || 'U').charAt(0).toUpperCase()}
                   </div>
                 )}
-                <svg className="w-4 h-4 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
+                <ChevronDownIcon className="text-dim" />
               </button>
 
               {showProfileMenu && (
-                <div className="absolute right-0 mt-2 w-48 bg-slate-800 border border-slate-700 rounded-lg shadow-xl z-50 py-1">
-                  <div className="px-4 py-2 border-b border-slate-700">
-                    <div className="font-medium text-sm">{user.user_metadata?.full_name || user.user_metadata?.name || 'User'}</div>
-                    <div className="text-xs text-slate-400 truncate">{user.email}</div>
+                <div className="absolute right-0 mt-3 w-56 rounded-xl shadow-2xl overflow-hidden"
+                     style={{ background: 'var(--bg-elev)', border: '1px solid var(--hairline-strong)' }}>
+                  <div className="px-4 py-3 border-b hairline">
+                    <div className="font-medium text-sm truncate">
+                      {user.user_metadata?.full_name || user.user_metadata?.name || 'User'}
+                    </div>
+                    <div className="text-xs text-muted truncate">{user.email}</div>
                   </div>
-                  <button
-                    onClick={goToAccount}
-                    className="w-full text-left px-4 py-2 text-sm hover:bg-slate-700 transition flex items-center gap-2"
-                  >
-                    <FaGear className="w-4 h-4 text-slate-400" />
-                    Account Settings
-                  </button>
-                  <button
-                    onClick={goToLink}
-                    className="w-full text-left px-4 py-2 text-sm hover:bg-slate-700 transition flex items-center gap-2"
-                  >
-                    <FaLink className="w-4 h-4 text-slate-400" />
-                    Link Device
-                  </button>
-                  <button
-                    onClick={() => {}}
-                    className="w-full text-left px-4 py-2 text-sm hover:bg-slate-700 transition flex items-center gap-2 text-slate-400"
-                  >
-                    <IoMdHelpCircleOutline className="w-4 h-4" />
-                    Help
-                  </button>
-                  <button
-                    onClick={handleLogout}
-                    className="w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-slate-700 transition flex items-center gap-2"
-                  >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                    </svg>
-                    Sign Out
-                  </button>
+                  <div className="py-1">
+                    <button onClick={() => { setShowProfileMenu(false); navigate('/account'); }}
+                            className="w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 transition flex items-center gap-3">
+                      <FaGear className="w-4 h-4 text-dim" /> Account Settings
+                    </button>
+                    <button onClick={() => { setShowProfileMenu(false); navigate('/link'); }}
+                            className="w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 transition flex items-center gap-3">
+                      <FaLink className="w-4 h-4 text-dim" /> Link Device
+                    </button>
+                    <button className="w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 transition flex items-center gap-3 text-muted">
+                      <IoMdHelpCircleOutline className="w-4 h-4" /> Help
+                    </button>
+                  </div>
+                  <div className="border-t hairline py-1">
+                    <button onClick={handleLogout}
+                            className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-white/5 transition flex items-center gap-3">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                      </svg>
+                      Sign Out
+                    </button>
+                  </div>
                 </div>
               )}
             </div>
           ) : (
-            <div className="flex items-center gap-3">
-              <button
-                onClick={handleLoginClick}
-                className="px-4 py-2 text-slate-300 hover:text-white transition"
-              >
-                Log In
-              </button>
-              <button
-                onClick={handleSignupClick}
-                className="px-4 py-2 bg-violet-600 hover:bg-violet-500 rounded-lg font-medium transition"
-              >
-                Sign Up
+            <div className="flex items-center gap-2">
+              <button onClick={() => navigate('/login')} className="btn-ghost">Log in</button>
+              <button onClick={() => navigate('/signup')} className="btn-primary">
+                Get started <ArrowRight />
               </button>
             </div>
           )}
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h2 className="text-5xl md:text-6xl font-bold mb-6 leading-tight">
-            All Your Streaming,
-            <span className="text-violet-400"> One App</span>
-          </h2>
-          <p className="text-xl text-slate-400 mb-8 max-w-2xl mx-auto">
-            Connect your Plex, Jellyfin, Emby, and IPTV providers.
-            Watch everything in one beautiful, unified experience on any device.
+      {/* ─────────── Hero ─────────── */}
+      <section className="relative pt-24 pb-32 px-6">
+        <div className="ambient" />
+        <div className="grain" />
+        <div className="relative max-w-4xl mx-auto text-center">
+          <div className="eyebrow mb-6">Now in beta</div>
+          <h1 className="text-5xl md:text-7xl font-bold leading-[1.05] tracking-tight mb-7"
+              style={{ letterSpacing: '-0.035em' }}>
+            All your streaming.
+            <br />
+            <span style={{
+              background: 'linear-gradient(180deg, var(--accent-bright) 0%, var(--accent) 100%)',
+              WebkitBackgroundClip: 'text',
+              WebkitTextFillColor: 'transparent',
+              backgroundClip: 'text',
+            }}>
+              One quiet app.
+            </span>
+          </h1>
+          <p className="text-lg md:text-xl text-muted max-w-2xl mx-auto mb-10 leading-relaxed">
+            Connect Plex, Jellyfin, Emby, and IPTV providers. Watch everything in one
+            unified interface — on any device, with no clutter.
           </p>
-          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
-            <button
-              onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
-              className="px-8 py-4 bg-violet-600 hover:bg-violet-500 rounded-lg font-semibold text-lg transition"
-            >
-              Get Started
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-3">
+            <button onClick={() => document.getElementById('pricing')?.scrollIntoView({ behavior: 'smooth' })}
+                    className="btn-primary">
+              Start free trial <ArrowRight />
             </button>
-            <button className="px-8 py-4 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg font-semibold text-lg transition">
-              Watch Demo
-            </button>
+            <button className="btn-secondary">Watch demo</button>
           </div>
+          <p className="mt-6 text-xs text-dim">14-day free trial · No credit card required</p>
         </div>
       </section>
 
-      {/* Platform Icons */}
-      <section className="py-8 px-4 border-y border-slate-800/50 bg-slate-900/30">
-        <div className="max-w-4xl mx-auto">
-          <p className="text-center text-slate-500 text-sm mb-6">Available on all your favorite platforms</p>
-          <div className="flex items-center justify-center gap-8 flex-wrap text-slate-400">
-            <div className="flex items-center gap-2">
-              <IoTvOutline className="w-6 h-6" />
-              <span className="text-sm">Smart TV</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <IoPhonePortraitOutline className="w-6 h-6" />
-              <span className="text-sm">iOS & Android</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <BsGlobe className="w-6 h-6" />
-              <span className="text-sm">Web Browser</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <FaApple className="w-6 h-6" />
-              <span className="text-sm">Apple TV</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <FaGoogle className="w-6 h-6" />
-              <span className="text-sm">Google TV</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <SiRoku className="w-6 h-6" />
-              <span className="text-sm">Roku</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <FaAmazon className="w-6 h-6" />
-              <span className="text-sm">Fire TV</span>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Features Section */}
-      <section className="py-20 px-4">
+      {/* ─────────── Platforms ─────────── */}
+      <section className="px-6 py-16" style={{ borderTop: '1px solid var(--hairline)', borderBottom: '1px solid var(--hairline)' }}>
         <div className="max-w-5xl mx-auto">
-          <h3 className="text-3xl font-bold text-center mb-4">Everything You Need</h3>
-          <p className="text-slate-400 text-center mb-12 max-w-2xl mx-auto">
-            NovixTV brings all your streaming content together in one powerful app.
+          <p className="text-center text-xs uppercase tracking-[0.2em] text-dim mb-10">
+            Available on all your favorite platforms
           </p>
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-6">
-              <div className="w-12 h-12 bg-violet-500/20 rounded-lg flex items-center justify-center mb-4 text-violet-400">
-                <LuLibraryBig className="w-6 h-6" />
+          <div className="flex items-center justify-center gap-x-12 gap-y-8 flex-wrap">
+            {platforms.map(({ icon: Icon, label }) => (
+              <div key={label} className="flex items-center gap-2.5 text-muted hover:text-white transition-colors">
+                <Icon className="w-5 h-5" />
+                <span className="text-sm font-medium">{label}</span>
               </div>
-              <h4 className="text-lg font-semibold mb-2">Connect Libraries</h4>
-              <p className="text-slate-400 text-sm">
-                Link your Plex, Jellyfin, or Emby libraries and access all your media in one place.
-              </p>
-            </div>
-            <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-6">
-              <div className="w-12 h-12 bg-violet-500/20 rounded-lg flex items-center justify-center mb-4 text-violet-400">
-                <IoTvOutline className="w-6 h-6" />
-              </div>
-              <h4 className="text-lg font-semibold mb-2">Live TV</h4>
-              <p className="text-slate-400 text-sm">
-                Add your IPTV provider and watch live channels seamlessly.
-              </p>
-            </div>
-            <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-6">
-              <div className="w-12 h-12 bg-violet-500/20 rounded-lg flex items-center justify-center mb-4 text-violet-400">
-                <ZapIcon />
-              </div>
-              <h4 className="text-lg font-semibold mb-2">Fast & Smooth</h4>
-              <p className="text-slate-400 text-sm">
-                Optimized for performance with instant playback and smooth navigation.
-              </p>
-            </div>
-            <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl p-6">
-              <div className="w-12 h-12 bg-violet-500/20 rounded-lg flex items-center justify-center mb-4 text-violet-400">
-                <MdDevices className="w-6 h-6" />
-              </div>
-              <h4 className="text-lg font-semibold mb-2">Any Device</h4>
-              <p className="text-slate-400 text-sm">
-                Watch on TV, phone, tablet, or browser. Your content follows you.
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* How It Works Section */}
-      <section className="py-20 px-4 bg-slate-900/30">
+      {/* ─────────── Features ─────────── */}
+      <section id="features" className="py-32 px-6">
+        <div className="max-w-6xl mx-auto">
+          <div className="max-w-2xl mb-20">
+            <div className="eyebrow mb-4">Everything you need</div>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-5"
+                style={{ letterSpacing: '-0.03em' }}>
+              All your streaming, together.
+            </h2>
+            <p className="text-lg text-muted leading-relaxed">
+              NovixTV brings every source you already pay for into one calm, fast app.
+            </p>
+          </div>
+
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-14">
+            {features.map(({ icon: Icon, title, body }) => (
+              <div key={title}>
+                <Icon className="w-6 h-6 mb-5" style={{ color: 'var(--accent-bright)' }} />
+                <h3 className="text-lg font-semibold mb-2 tracking-tight">{title}</h3>
+                <p className="text-sm text-muted leading-relaxed">{body}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ─────────── How It Works ─────────── */}
+      <section className="py-32 px-6" style={{ borderTop: '1px solid var(--hairline)' }}>
         <div className="max-w-5xl mx-auto">
-          <h3 className="text-3xl font-bold text-center mb-4">How It Works</h3>
-          <p className="text-slate-400 text-center mb-12 max-w-2xl mx-auto">
-            Get started in minutes. Connect your services and start streaming.
-          </p>
-          <div className="grid md:grid-cols-3 gap-8">
-            <div className="text-center">
-              <div className="w-16 h-16 bg-violet-500/20 rounded-full flex items-center justify-center mx-auto mb-4 relative">
-                <span className="text-2xl font-bold text-violet-400">1</span>
+          <div className="text-center max-w-2xl mx-auto mb-20">
+            <div className="eyebrow mb-4">How it works</div>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-5"
+                style={{ letterSpacing: '-0.03em' }}>
+              Get started in minutes.
+            </h2>
+            <p className="text-lg text-muted">Connect your services and start streaming.</p>
+          </div>
+          <div className="grid md:grid-cols-3 gap-12 md:gap-16">
+            {[
+              { n: '01', t: 'Create account',    b: 'Sign up with email or your favorite social account. Start your 14-day free trial instantly.' },
+              { n: '02', t: 'Connect services',  b: 'Link your Plex, Jellyfin, Emby, or IPTV provider credentials.' },
+              { n: '03', t: 'Start watching',    b: 'Download the app on your devices and enjoy all your content in one place.' },
+            ].map(({ n, t, b }) => (
+              <div key={n}>
+                <div className="font-mono text-sm mb-6" style={{ color: 'var(--accent)' }}>{n}</div>
+                <h3 className="text-xl font-semibold mb-3 tracking-tight">{t}</h3>
+                <p className="text-sm text-muted leading-relaxed">{b}</p>
               </div>
-              <h4 className="text-lg font-semibold mb-2">Create Account</h4>
-              <p className="text-slate-400 text-sm">
-                Sign up with email or your favorite social account. Start your 14-day free trial instantly.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-violet-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-violet-400">2</span>
-              </div>
-              <h4 className="text-lg font-semibold mb-2">Connect Services</h4>
-              <p className="text-slate-400 text-sm">
-                Link your Plex, Jellyfin, Emby, or IPTV provider credentials.
-              </p>
-            </div>
-            <div className="text-center">
-              <div className="w-16 h-16 bg-violet-500/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl font-bold text-violet-400">3</span>
-              </div>
-              <h4 className="text-lg font-semibold mb-2">Start Watching</h4>
-              <p className="text-slate-400 text-sm">
-                Download the app on your devices and enjoy all your content in one place.
-              </p>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* Pricing Section */}
-      <section id="pricing" className="py-20 px-4">
-        <div className="max-w-4xl mx-auto">
-          <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold mb-4">Simple Pricing</h3>
-            <p className="text-slate-400">Start with a 14-day free trial. Cancel anytime.</p>
+      {/* ─────────── Pricing ─────────── */}
+      <section id="pricing" className="py-32 px-6" style={{ borderTop: '1px solid var(--hairline)' }}>
+        <div className="max-w-5xl mx-auto">
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <div className="eyebrow mb-4">Pricing</div>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-5"
+                style={{ letterSpacing: '-0.03em' }}>
+              Simple, honest pricing.
+            </h2>
+            <p className="text-lg text-muted">14-day free trial. Cancel anytime.</p>
           </div>
 
-          <div className="grid md:grid-cols-2 gap-6 max-w-2xl mx-auto">
+          <div className="grid md:grid-cols-2 gap-6 max-w-3xl mx-auto">
             {plans.map((plan) => (
               <div
                 key={plan.id}
-                className={`relative bg-slate-800/50 border rounded-2xl p-6 ${
-                  plan.popular
-                    ? 'border-violet-500 ring-2 ring-violet-500/20'
-                    : 'border-slate-700'
-                }`}
+                className={`relative rounded-2xl p-8 ${plan.popular ? 'gradient-card' : ''}`}
+                style={{
+                  background: plan.popular ? undefined : 'var(--bg-elev)',
+                  outline: plan.popular ? '1px solid rgba(167,139,250,0.4)' : '1px solid var(--hairline)',
+                }}
               >
                 {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <span className="bg-violet-500 text-white text-xs font-bold px-3 py-1 rounded-full">
-                      BEST VALUE
+                  <div className="absolute -top-3 left-8">
+                    <span className="text-[10px] uppercase tracking-[0.18em] font-semibold px-2.5 py-1 rounded-full"
+                          style={{ background: 'var(--accent)', color: 'var(--bg)' }}>
+                      Best value
                     </span>
                   </div>
                 )}
-                <div className="mb-6">
-                  <h4 className="text-xl font-bold mb-2">{plan.name}</h4>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-4xl font-bold">${plan.price}</span>
-                    <span className="text-slate-400">/{plan.period}</span>
+                <div className="mb-8">
+                  <h3 className="text-sm font-medium text-muted uppercase tracking-wider mb-3">{plan.name}</h3>
+                  <div className="flex items-baseline gap-1.5">
+                    <span className="text-5xl font-bold tracking-tight">${plan.price}</span>
+                    <span className="text-muted text-sm">/ {plan.period}</span>
                   </div>
                   {plan.savings && (
-                    <span className="text-violet-400 text-sm font-medium">{plan.savings}</span>
+                    <span className="inline-block mt-2 text-xs font-medium" style={{ color: 'var(--accent-bright)' }}>
+                      {plan.savings}
+                    </span>
                   )}
                 </div>
-                <ul className="space-y-3 mb-6">
-                  <li className="flex items-center gap-3">
-                    <CheckIcon />
-                    <span>All platform access</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <CheckIcon />
-                    <span>Plex, Jellyfin & Emby support</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <CheckIcon />
-                    <span>IPTV integration</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <CheckIcon />
-                    <span>4K streaming support</span>
-                  </li>
-                  <li className="flex items-center gap-3">
-                    <CheckIcon />
-                    <span>14-day free trial</span>
-                  </li>
+                <ul className="space-y-3.5 mb-8 text-sm">
+                  {[
+                    'All platform access',
+                    'Plex, Jellyfin & Emby support',
+                    'IPTV integration',
+                    '4K streaming support',
+                    '14-day free trial',
+                  ].map((item) => (
+                    <li key={item} className="flex items-center gap-3">
+                      <span style={{ color: 'var(--accent-bright)' }}><CheckIcon /></span>
+                      <span>{item}</span>
+                    </li>
+                  ))}
                 </ul>
                 <button
                   onClick={() => handleSelectPlan(plan)}
-                  className={`w-full py-3 rounded-lg font-semibold transition ${
-                    plan.popular
-                      ? 'bg-violet-600 hover:bg-violet-500'
-                      : 'bg-slate-700 hover:bg-slate-600'
-                  }`}
+                  className={plan.popular ? 'btn-primary w-full' : 'btn-secondary w-full'}
                 >
-                  Start Free Trial
+                  Start free trial
                 </button>
               </div>
             ))}
@@ -495,51 +405,58 @@ export default function Home() {
         </div>
       </section>
 
-      {/* FAQ Section */}
-      <section className="py-20 px-4 bg-slate-900/30">
+      {/* ─────────── FAQ ─────────── */}
+      <section id="faq" className="py-32 px-6" style={{ borderTop: '1px solid var(--hairline)' }}>
         <div className="max-w-3xl mx-auto">
-          <h3 className="text-3xl font-bold text-center mb-4">Frequently Asked Questions</h3>
-          <p className="text-slate-400 text-center mb-10">
-            Got questions? We've got answers.
-          </p>
-          <div className="bg-slate-800/30 border border-slate-700/50 rounded-xl">
-            {faqItems.map((item, index) => (
+          <div className="mb-12">
+            <div className="eyebrow mb-4">FAQ</div>
+            <h2 className="text-4xl md:text-5xl font-bold tracking-tight"
+                style={{ letterSpacing: '-0.03em' }}>
+              Questions, answered.
+            </h2>
+          </div>
+          <div>
+            {faqItems.map((item, i) => (
               <FAQItem
-                key={index}
+                key={i}
                 question={item.question}
                 answer={item.answer}
-                isOpen={openFaqIndex === index}
-                onClick={() => setOpenFaqIndex(openFaqIndex === index ? null : index)}
+                isOpen={openFaqIndex === i}
+                onClick={() => setOpenFaqIndex(openFaqIndex === i ? null : i)}
               />
             ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 px-4">
-        <div className="max-w-4xl mx-auto text-center">
-          <h3 className="text-3xl font-bold mb-4">Ready to Get Started?</h3>
-          <p className="text-slate-400 mb-8 max-w-xl mx-auto">
-            Join thousands of users who have unified their streaming experience with NovixTV.
+      {/* ─────────── CTA ─────────── */}
+      <section className="relative py-32 px-6 overflow-hidden" style={{ borderTop: '1px solid var(--hairline)' }}>
+        <div className="ambient" />
+        <div className="relative max-w-3xl mx-auto text-center">
+          <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-5"
+              style={{ letterSpacing: '-0.03em' }}>
+            Unify your streaming today.
+          </h2>
+          <p className="text-lg text-muted mb-10 max-w-xl mx-auto">
+            Join thousands who've consolidated every service they pay for into one app.
           </p>
-          <button
-            onClick={handleSignupClick}
-            className="px-8 py-4 bg-violet-600 hover:bg-violet-500 rounded-lg font-semibold text-lg transition"
-          >
-            Start Your Free Trial
+          <button onClick={() => navigate('/signup')} className="btn-primary">
+            Start free trial <ArrowRight />
           </button>
         </div>
       </section>
 
-      {/* Footer */}
-      <footer className="py-10 px-4 border-t border-slate-800/50 bg-slate-900/50">
-        <div className="max-w-5xl mx-auto">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-4">
-            <img src="/logo2.svg" alt="NovixTV" className="h-8" />
-            <div className="text-slate-500 text-sm">
-              &copy; {new Date().getFullYear()} NovixTV. All rights reserved.
-            </div>
+      {/* ─────────── Footer ─────────── */}
+      <footer className="px-6 py-12" style={{ borderTop: '1px solid var(--hairline)' }}>
+        <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-6">
+          <Wordmark className="text-base" />
+          <div className="flex items-center gap-8 text-sm text-muted">
+            <a href="#features" className="hover:text-white transition">Features</a>
+            <a href="#pricing" className="hover:text-white transition">Pricing</a>
+            <a href="#faq" className="hover:text-white transition">FAQ</a>
+          </div>
+          <div className="text-xs text-dim">
+            © {new Date().getFullYear()} novix.tv
           </div>
         </div>
       </footer>
