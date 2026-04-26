@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react';
 import { useAuth } from '../lib/auth';
 import { FaGear, FaLink } from 'react-icons/fa6';
 import { IoMdHelpCircleOutline } from 'react-icons/io';
-import { IoTvOutline, IoPhonePortraitOutline } from 'react-icons/io5';
+import { IoTvOutline, IoPhonePortraitOutline, IoFlashOutline } from 'react-icons/io5';
 import { BsGlobe } from 'react-icons/bs';
 import { FaApple, FaGoogle, FaAmazon } from 'react-icons/fa';
 import { SiRoku } from 'react-icons/si';
@@ -30,12 +30,6 @@ const CheckIcon = () => (
 const ArrowRight = () => (
   <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
     <path strokeLinecap="round" strokeLinejoin="round" d="M14 5l7 7m0 0l-7 7m7-7H3" />
-  </svg>
-);
-
-const ZapIcon = ({ className = '' }) => (
-  <svg className={`w-5 h-5 ${className}`} fill="none" stroke="currentColor" strokeWidth={1.75} viewBox="0 0 24 24">
-    <path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" />
   </svg>
 );
 
@@ -88,7 +82,7 @@ const features = [
     body: 'Add your IPTV provider and watch live channels seamlessly.',
   },
   {
-    icon: ZapIcon,
+    icon: IoFlashOutline,
     title: 'Fast & Smooth',
     body: 'Optimized for performance with instant playback and smooth navigation.',
   },
@@ -155,20 +149,20 @@ export default function Home() {
   return (
     <div className="min-h-screen text-white" style={{ background: 'var(--bg)' }}>
       {/* ─────────── Navigation ─────────── */}
-      <nav className="sticky top-0 z-40 backdrop-blur-xl" style={{ background: 'rgba(7,7,13,0.7)' }}>
-        <div className="max-w-6xl mx-auto px-6 py-4 flex items-center justify-between">
-          <button onClick={() => navigate('/')} className="flex items-center">
+      <nav className="sticky top-0 z-40" style={{ background: 'var(--bg)', borderBottom: '1px solid var(--hairline)' }}>
+        <div className="max-w-6xl mx-auto px-6 py-4 relative flex items-center justify-between">
+          <button onClick={() => navigate('/')} className="flex items-center relative z-10">
             <Wordmark />
           </button>
 
-          <div className="hidden md:flex items-center gap-8">
+          <div className="hidden md:flex items-center gap-8 absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2">
             <a href="#features" className="nav-link text-sm">Features</a>
             <a href="#pricing" className="nav-link text-sm">Pricing</a>
             <a href="#faq" className="nav-link text-sm">FAQ</a>
           </div>
 
           {user ? (
-            <div className="relative" ref={profileMenuRef}>
+            <div className="relative z-10" ref={profileMenuRef}>
               <button
                 onClick={() => setShowProfileMenu(!showProfileMenu)}
                 className="flex items-center gap-2 hover:opacity-80 transition"
@@ -188,42 +182,44 @@ export default function Home() {
                 <ChevronDownIcon className="text-dim" />
               </button>
 
-              {showProfileMenu && (
-                <div className="absolute right-0 mt-3 w-56 rounded-xl shadow-2xl overflow-hidden"
-                     style={{ background: 'var(--bg-elev)', border: '1px solid var(--hairline-strong)' }}>
-                  <div className="px-4 py-3 border-b hairline">
-                    <div className="font-medium text-sm truncate">
-                      {user.user_metadata?.full_name || user.user_metadata?.name || 'User'}
-                    </div>
-                    <div className="text-xs text-muted truncate">{user.email}</div>
+              <div
+                data-open={showProfileMenu}
+                className="menu absolute right-0 mt-3 w-60 rounded-xl overflow-hidden"
+                style={{ zIndex: 100 }}
+              >
+                <div className="px-4 py-3.5">
+                  <div className="font-medium text-sm truncate" style={{ color: 'var(--fg)' }}>
+                    {user.user_metadata?.full_name || user.user_metadata?.name || 'User'}
                   </div>
-                  <div className="py-1">
-                    <button onClick={() => { setShowProfileMenu(false); navigate('/account'); }}
-                            className="w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 transition flex items-center gap-3">
-                      <FaGear className="w-4 h-4 text-dim" /> Account Settings
-                    </button>
-                    <button onClick={() => { setShowProfileMenu(false); navigate('/link'); }}
-                            className="w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 transition flex items-center gap-3">
-                      <FaLink className="w-4 h-4 text-dim" /> Link Device
-                    </button>
-                    <button className="w-full text-left px-4 py-2.5 text-sm hover:bg-white/5 transition flex items-center gap-3 text-muted">
-                      <IoMdHelpCircleOutline className="w-4 h-4" /> Help
-                    </button>
-                  </div>
-                  <div className="border-t hairline py-1">
-                    <button onClick={handleLogout}
-                            className="w-full text-left px-4 py-2.5 text-sm text-red-400 hover:bg-white/5 transition flex items-center gap-3">
-                      <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                      </svg>
-                      Sign Out
-                    </button>
+                  <div className="text-xs truncate mt-0.5" style={{ color: 'var(--fg-muted)' }}>
+                    {user.email}
                   </div>
                 </div>
-              )}
+                <div className="menu-divider" />
+                <div className="py-1.5">
+                  <button onClick={() => { setShowProfileMenu(false); navigate('/account'); }} className="menu-item">
+                    <FaGear className="menu-icon" /> Account settings
+                  </button>
+                  <button onClick={() => { setShowProfileMenu(false); navigate('/link'); }} className="menu-item">
+                    <FaLink className="menu-icon" /> Link device
+                  </button>
+                  <button className="menu-item">
+                    <IoMdHelpCircleOutline className="menu-icon" /> Help
+                  </button>
+                </div>
+                <div className="menu-divider" />
+                <div className="py-1.5">
+                  <button onClick={handleLogout} className="menu-item menu-item--danger">
+                    <svg className="menu-icon" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
+                    </svg>
+                    Sign out
+                  </button>
+                </div>
+              </div>
             </div>
           ) : (
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 relative z-10">
               <button onClick={() => navigate('/login')} className="btn-ghost">Log in</button>
               <button onClick={() => navigate('/signup')} className="btn-primary">
                 Get started <ArrowRight />
@@ -235,22 +231,13 @@ export default function Home() {
 
       {/* ─────────── Hero ─────────── */}
       <section className="relative pt-24 pb-32 px-6">
-        <div className="ambient" />
-        <div className="grain" />
         <div className="relative max-w-4xl mx-auto text-center">
           <div className="eyebrow mb-6">Now in beta</div>
           <h1 className="text-5xl md:text-7xl font-bold leading-[1.05] tracking-tight mb-7"
               style={{ letterSpacing: '-0.035em' }}>
             All your streaming.
             <br />
-            <span style={{
-              background: 'linear-gradient(180deg, var(--accent-bright) 0%, var(--accent) 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
-            }}>
-              One quiet app.
-            </span>
+            <span style={{ color: 'var(--accent-bright)' }}>One quiet app.</span>
           </h1>
           <p className="text-lg md:text-xl text-muted max-w-2xl mx-auto mb-10 leading-relaxed">
             Connect Plex, Jellyfin, Emby, and IPTV providers. Watch everything in one
@@ -301,7 +288,7 @@ export default function Home() {
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-x-10 gap-y-14">
             {features.map(({ icon: Icon, title, body }) => (
               <div key={title}>
-                <Icon className="w-6 h-6 mb-5" style={{ color: 'var(--accent-bright)' }} />
+                <Icon className="w-6 h-6 mb-5" style={{ color: 'var(--accent)' }} />
                 <h3 className="text-lg font-semibold mb-2 tracking-tight">{title}</h3>
                 <p className="text-sm text-muted leading-relaxed">{body}</p>
               </div>
@@ -353,10 +340,12 @@ export default function Home() {
             {plans.map((plan) => (
               <div
                 key={plan.id}
-                className={`relative rounded-2xl p-8 ${plan.popular ? 'gradient-card' : ''}`}
+                className="relative rounded-2xl p-8"
                 style={{
-                  background: plan.popular ? undefined : 'var(--bg-elev)',
-                  outline: plan.popular ? '1px solid rgba(167,139,250,0.4)' : '1px solid var(--hairline)',
+                  background: 'var(--bg-elev)',
+                  outline: plan.popular
+                    ? '1px solid var(--accent)'
+                    : '1px solid var(--hairline)',
                 }}
               >
                 {plan.popular && (
@@ -430,8 +419,7 @@ export default function Home() {
       </section>
 
       {/* ─────────── CTA ─────────── */}
-      <section className="relative py-32 px-6 overflow-hidden" style={{ borderTop: '1px solid var(--hairline)' }}>
-        <div className="ambient" />
+      <section className="relative py-32 px-6" style={{ borderTop: '1px solid var(--hairline)' }}>
         <div className="relative max-w-3xl mx-auto text-center">
           <h2 className="text-4xl md:text-5xl font-bold tracking-tight mb-5"
               style={{ letterSpacing: '-0.03em' }}>

@@ -3,8 +3,7 @@ import { AuthProvider, useAuth } from './lib/auth';
 import Dashboard from './pages/Dashboard';
 import Settings from './pages/Settings';
 import Home from './pages/Home';
-import Login from './pages/Login';
-import Signup from './pages/Signup';
+import Auth from './pages/Auth';
 import Success from './pages/Success';
 import Account from './pages/Account';
 import Link from './pages/Link';
@@ -85,10 +84,8 @@ function Router() {
   let content;
   if (route === '/') {
     content = <Home />;
-  } else if (route === '/login') {
-    content = <Login />;
-  } else if (route === '/signup') {
-    content = <Signup />;
+  } else if (route === '/login' || route === '/signup') {
+    content = <Auth key="auth" initialMode={route === '/signup' ? 'signup' : 'login'} />;
   } else if (route === '/success') {
     content = <Success />;
   } else if (route === '/account') {
